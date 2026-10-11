@@ -1,0 +1,39 @@
+{
+  "policy_id": "POL-SILVER-001",
+  "plan_name": "Silver Care Basic Health Plan",
+  "sum_insured": 300000.0,
+  "room_rent_cap_daily": 3000.0,
+  "icu_rent_cap_daily": 7500.0,
+  "copay_percentage": 20.0,
+  "initial_waiting_period_days": 30,
+  "pre_existing_waiting_period_months": 24,
+  "sub_limits": {
+    "CATARACT": 25000.0,
+    "HERNIA": 40000.0,
+    "APPENDICITIS": 50000.0
+  },
+  "exclusions": [
+    "Cosmetic surgery or aesthetic treatments",
+    "Experimental or unproven pharmacological therapies",
+    "Self-inflicted injuries",
+    "Routine dental care and outpatient consultations",
+    "Robotic assisted surgery consumables"
+  ],
+  "clauses": [
+    {
+      "clause_id": "SEC-3.1",
+      "title": "Room Rent & Accommodation Limits",
+      "text": "Daily room rent is capped at 1% of Sum Insured (max INR 3,000/day). ICU charges capped at INR 7,500/day. Proportionate deductions apply to associated medical charges if room limit is exceeded."
+    },
+    {
+      "clause_id": "SEC-4.2",
+      "title": "Mandatory Co-Payment",
+      "text": "A flat co-payment of 20% shall be borne by the insured person on all admissible claim expenses across all network and non-network hospitals."
+    },
+    {
+      "clause_id": "SEC-5.1",
+      "title": "Initial 30-Day Waiting Period",
+      "text": "No indemnity claim for any illness or medical condition contracted within the first 30 days of the policy inception shall be admissible, except in cases of acute accidental injury."
+    }
+  ]
+}

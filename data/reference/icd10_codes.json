@@ -1,0 +1,162 @@
+[
+  {
+    "code": "K35.80",
+    "name": "Unspecified acute appendicitis",
+    "category": "General Surgery",
+    "standard_procedures": ["CPT-44970", "CPT-44950"],
+    "expected_los_days": 2,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "K35.3",
+    "name": "Acute appendicitis with localized peritonitis",
+    "category": "General Surgery",
+    "standard_procedures": ["CPT-44960"],
+    "expected_los_days": 4,
+    "typical_icu_days": 1
+  },
+  {
+    "code": "K40.90",
+    "name": "Unilateral inguinal hernia, without obstruction or gangrene",
+    "category": "General Surgery",
+    "standard_procedures": ["CPT-49505"],
+    "expected_los_days": 1,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "K80.00",
+    "name": "Calculus of gallbladder with acute cholecystitis",
+    "category": "General Surgery",
+    "standard_procedures": ["CPT-47562", "CPT-47563"],
+    "expected_los_days": 3,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "I21.09",
+    "name": "ST elevation (STEMI) myocardial infarction involving left anterior descending artery",
+    "category": "Cardiology",
+    "standard_procedures": ["CPT-92928", "CPT-93458"],
+    "expected_los_days": 4,
+    "typical_icu_days": 2
+  },
+  {
+    "code": "I20.0",
+    "name": "Unstable angina pectoris",
+    "category": "Cardiology",
+    "standard_procedures": ["CPT-93454"],
+    "expected_los_days": 2,
+    "typical_icu_days": 1
+  },
+  {
+    "code": "I25.10",
+    "name": "Atherosclerotic heart disease of native coronary artery",
+    "category": "Cardiology",
+    "standard_procedures": ["CPT-92928", "CPT-33533"],
+    "expected_los_days": 5,
+    "typical_icu_days": 2
+  },
+  {
+    "code": "O80",
+    "name": "Encounter for full-term uncomplicated delivery (Normal Vaginal Delivery)",
+    "category": "Obstetrics",
+    "standard_procedures": ["CPT-59400"],
+    "expected_los_days": 2,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "O82",
+    "name": "Encounter for caesarean delivery without indication",
+    "category": "Obstetrics",
+    "standard_procedures": ["CPT-59510"],
+    "expected_los_days": 3,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "O00.90",
+    "name": "Unspecified ectopic pregnancy without intrauterine pregnancy",
+    "category": "Obstetrics",
+    "standard_procedures": ["CPT-59150"],
+    "expected_los_days": 2,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "A97.0",
+    "name": "Dengue fever without warning signs",
+    "category": "Internal Medicine",
+    "standard_procedures": ["MED-SUPPORTIVE"],
+    "expected_los_days": 3,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "A97.2",
+    "name": "Severe dengue with plasma leakage / severe shock",
+    "category": "Internal Medicine",
+    "standard_procedures": ["MED-ICU-CARE"],
+    "expected_los_days": 6,
+    "typical_icu_days": 3
+  },
+  {
+    "code": "E11.65",
+    "name": "Type 2 diabetes mellitus with ketoacidosis",
+    "category": "Internal Medicine",
+    "standard_procedures": ["MED-KETO-CARE"],
+    "expected_los_days": 4,
+    "typical_icu_days": 1
+  },
+  {
+    "code": "J18.9",
+    "name": "Pneumonia, unspecified organism",
+    "category": "Internal Medicine",
+    "standard_procedures": ["MED-PNEUMO-CARE"],
+    "expected_los_days": 4,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "S72.001A",
+    "name": "Fracture of unspecified part of neck of right femur, initial encounter for closed fracture",
+    "category": "Orthopedics",
+    "standard_procedures": ["CPT-27236", "CPT-27244"],
+    "expected_los_days": 5,
+    "typical_icu_days": 1
+  },
+  {
+    "code": "M17.11",
+    "name": "Primary osteoarthritis, right knee",
+    "category": "Orthopedics",
+    "standard_procedures": ["CPT-27447"],
+    "expected_los_days": 4,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "S83.511A",
+    "name": "Sprain of anterior cruciate ligament of right knee, initial encounter",
+    "category": "Orthopedics",
+    "standard_procedures": ["CPT-29888"],
+    "expected_los_days": 2,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "H26.9",
+    "name": "Unspecified cataract",
+    "category": "Ophthalmology",
+    "standard_procedures": ["CPT-66984"],
+    "expected_los_days": 1,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "N20.1",
+    "name": "Calculus of ureter with hydronephrosis",
+    "category": "Urology",
+    "standard_procedures": ["CPT-52352"],
+    "expected_los_days": 2,
+    "typical_icu_days": 0
+  },
+  {
+    "code": "J06.9",
+    "name": "Acute upper respiratory infection, unspecified",
+    "category": "Internal Medicine",
+    "standard_procedures": ["MED-SUPPORTIVE"],
+    "expected_los_days": 1,
+    "typical_icu_days": 0
+  }
+]

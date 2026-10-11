@@ -1,0 +1,60 @@
+[
+  {
+    "primary_package_code": "CPT-44970",
+    "primary_description": "Laparoscopic appendectomy (uncomplicated)",
+    "bundled_component_codes": [
+      {
+        "code": "CPT-49000",
+        "description": "Exploratory laparotomy / diagnostic laparoscopy incision",
+        "reason": "Surgical approach is bundled into primary laparoscopic procedure code."
+      },
+      {
+        "code": "CPT-49080",
+        "description": "Peritoneal lavage / drainage",
+        "reason": "Irrigation and drainage are integral parts of appendectomy package."
+      },
+      {
+        "code": "CPT-12002",
+        "description": "Simple wound closure of skin / subcutaneous tissues",
+        "reason": "Incision closure is bundled into all standard operative packages."
+      }
+    ]
+  },
+  {
+    "primary_package_code": "CPT-27447",
+    "primary_description": "Total Knee Arthroplasty",
+    "bundled_component_codes": [
+      {
+        "code": "CPT-29870",
+        "description": "Arthroscopic knee exploration",
+        "reason": "Joint exploration is an inherent component of total knee replacement."
+      },
+      {
+        "code": "CPT-27332",
+        "description": "Meniscectomy knee, medial or lateral",
+        "reason": "Resection of menisci is routine during joint replacement arthroplasty."
+      },
+      {
+        "code": "CPT-20610",
+        "description": "Arthrocentesis, major joint injection/aspiration",
+        "reason": "Intraoperative joint aspiration is bundled with arthroplasty."
+      }
+    ]
+  },
+  {
+    "primary_package_code": "CPT-92928",
+    "primary_description": "Percutaneous transcatheter coronary angioplasty with single stent",
+    "bundled_component_codes": [
+      {
+        "code": "CPT-92920",
+        "description": "Percutaneous balloon angioplasty without stent",
+        "reason": "Pre-dilation balloon angioplasty is included in stent placement package."
+      },
+      {
+        "code": "CPT-93451",
+        "description": "Right heart catheterization",
+        "reason": "Vascular access and routine guidance are bundled into angioplasty package."
+      }
+    ]
+  }
+]

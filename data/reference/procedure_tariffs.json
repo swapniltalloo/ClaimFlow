@@ -1,0 +1,154 @@
+[
+  {
+    "code": "CPT-44970",
+    "description": "Laparoscopic appendectomy (uncomplicated)",
+    "category": "PROCEDURE",
+    "median_price": 55000.0,
+    "std_dev": 6000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-44960",
+    "description": "Appendectomy for ruptured appendix with abscess or peritonitis",
+    "category": "PROCEDURE",
+    "median_price": 95000.0,
+    "std_dev": 10000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-49505",
+    "description": "Repair initial inguinal hernia, age 5 years or older; with mesh",
+    "category": "PROCEDURE",
+    "median_price": 48000.0,
+    "std_dev": 5000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-47562",
+    "description": "Laparoscopic cholecystectomy",
+    "category": "PROCEDURE",
+    "median_price": 65000.0,
+    "std_dev": 7500.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-92928",
+    "description": "Percutaneous transcatheter coronary angioplasty with single drug-eluting stent (DES)",
+    "category": "PROCEDURE",
+    "median_price": 140000.0,
+    "std_dev": 15000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-93458",
+    "description": "Left heart catheterization with coronary angiography",
+    "category": "PROCEDURE",
+    "median_price": 25000.0,
+    "std_dev": 3000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-59400",
+    "description": "Routine obstetric care including antepartum, vaginal delivery, and postpartum",
+    "category": "PROCEDURE",
+    "median_price": 40000.0,
+    "std_dev": 4500.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-59510",
+    "description": "Routine obstetric care including Caesarean delivery and postpartum care",
+    "category": "PROCEDURE",
+    "median_price": 65000.0,
+    "std_dev": 7000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-27447",
+    "description": "Total Knee Arthroplasty (Knee Replacement)",
+    "category": "PROCEDURE",
+    "median_price": 185000.0,
+    "std_dev": 18000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-27236",
+    "description": "Open treatment of femoral neck fracture, proximal femur",
+    "category": "PROCEDURE",
+    "median_price": 110000.0,
+    "std_dev": 12000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-29888",
+    "description": "Arthroscopically aided anterior cruciate ligament (ACL) reconstruction",
+    "category": "PROCEDURE",
+    "median_price": 85000.0,
+    "std_dev": 9000.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CPT-66984",
+    "description": "Extracapsular cataract removal with insertion of intraocular lens (Phacoemulsification)",
+    "category": "PROCEDURE",
+    "median_price": 32000.0,
+    "std_dev": 3500.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "ROOM-STD-PVT",
+    "description": "Standard Private Room Accommodation per day",
+    "category": "ROOM_ICU",
+    "median_price": 4500.0,
+    "std_dev": 600.0,
+    "max_allowed_multiplier": 1.4
+  },
+  {
+    "code": "ROOM-ICU-BED",
+    "description": "Intensive Care Unit (ICU) Bed per day with continuous monitoring",
+    "category": "ROOM_ICU",
+    "median_price": 14000.0,
+    "std_dev": 1800.0,
+    "max_allowed_multiplier": 1.4
+  },
+  {
+    "code": "LAB-CBC-PLATE",
+    "description": "Complete Blood Count with Platelet Index",
+    "category": "INVESTIGATION",
+    "median_price": 850.0,
+    "std_dev": 100.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "LAB-ABG-SERIAL",
+    "description": "Arterial Blood Gas Analysis (Serial)",
+    "category": "INVESTIGATION",
+    "median_price": 1800.0,
+    "std_dev": 250.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "IMG-CT-ABDOMEN",
+    "description": "Contrast Enhanced Computed Tomography (CECT) Abdomen and Pelvis",
+    "category": "INVESTIGATION",
+    "median_price": 6500.0,
+    "std_dev": 800.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "MED-IV-ABX",
+    "description": "Broad Spectrum IV Antibiotic Therapy (e.g., Meropenem / Ceftriaxone) Course",
+    "category": "MEDICATION",
+    "median_price": 4200.0,
+    "std_dev": 500.0,
+    "max_allowed_multiplier": 1.5
+  },
+  {
+    "code": "CONS-SURG-KIT",
+    "description": "Disposable Laparoscopic Surgical Trocar & Consumable Kit",
+    "category": "CONSUMABLE",
+    "median_price": 12500.0,
+    "std_dev": 1500.0,
+    "max_allowed_multiplier": 1.5
+  }
+]

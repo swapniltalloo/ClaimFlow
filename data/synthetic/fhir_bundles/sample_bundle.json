@@ -1,0 +1,31 @@
+{
+  "resourceType": "Bundle",
+  "id": "FHIR-BUNDLE-SAMPLE-001",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "PAT-43272",
+        "name": "Ananya Patel",
+        "gender": "male"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "COND-CLM-2026-00916",
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10",
+              "code": "O82",
+              "display": "Encounter for caesarean delivery without indication"
+            }
+          ]
+        },
+        "subject": "Patient/PAT-43272"
+      }
+    }
+  ]
+}
