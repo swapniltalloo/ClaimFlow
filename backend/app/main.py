@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import logger
-from app.api.endpoints import health
+from app.api.endpoints import health, claims
 
 
 @asynccontextmanager
@@ -33,4 +33,5 @@ app.add_middleware(
 
 # Include API routers
 app.include_router(health.router, tags=["Health"])
+app.include_router(claims.router, prefix=settings.API_V1_PREFIX)
 

@@ -1,0 +1,83 @@
+from fastapi import APIRouter, HTTPException, BackgroundTasks
+from pydantic import BaseModel
+from typing import Dict, Any, List, Optional
+from datetime import datetime, timezone
+
+from app.models.domain import Claim, LineItem
+from app.orchestrator.pipeline import ClaimFlowOrchestrator, PipelineExecutionResult
+from app.core.logging import logger
+
+router = APIRouter(prefix="/claims", tags=["Claims"])
+orchestrator = ClaimFlowOrchestrator()
+
+# In-memory claims repository for real-time dashboard
+PROCESSED_CLAIMS: Dict[str, Dict[str, Any]] = {}
+
+
+class DischargeIngestRequest(BaseModel):
+    claim: Claim
+    discharge_summary: str
+    fhir_bundle: Optional[Dict[str, Any]] = None
+    policy_tenure_days: int = 180
+
+
+@router.post("/discharge", response_model=Dict[str, Any])
+async def process_discharge_event(request: DischargeIngestRequest):
+    """Processes a hospital discharge event in real time through the full clearinghouse pipeline."""
+    try:
+        result = await orchestrator.process_claim(
+            claim=request.claim,
+            discharge_text=request.discharge_summary,
+            fhir_bundle=request.fhir_bundle,
+            policy_tenure_days=request.policy_tenure_days
+        )
+        data = result.to_dict()
+        data["claim_details"] = request.claim.model_dump()
+        PROCESSED_CLAIMS[request.claim.claim_id] = data
+        return data
+    except Exception as e:
+        logger.error(f"Error processing claim {request.claim.claim_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("", response_model=List[Dict[str, Any]])
+async def list_claims():
+    """Lists all processed claims and their clearinghouse outcomes."""
+    return list(PROCESSED_CLAIMS.values())
+
+
+@router.get("/{claim_id}", response_model=Dict[str, Any])
+async def get_claim(claim_id: str):
+    """Retrieves full details, stage latencies, and verdicts for a claim."""
+    if claim_id not in PROCESSED_CLAIMS:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    return PROCESSED_CLAIMS[claim_id]
+
+
+@router.get("/{claim_id}/evidence-pack", response_model=Dict[str, Any])
+async def get_evidence_pack(claim_id: str):
+    """Generates an evidence dossier for human reviewer queues (mismatches, EHR excerpts, clause citations)."""
+    if claim_id not in PROCESSED_CLAIMS:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    claim_record = PROCESSED_CLAIMS[claim_id]
+    claim_details = claim_record.get("claim_details", {})
+    line_items = claim_details.get("line_items", [])
+
+    mismatches = [
+        item for item in line_items
+        if item.get("verdict") in {"MISMATCH", "UNSUPPORTED"}
+    ]
+
+    return {
+        "claim_id": claim_id,
+        "outcome": claim_record.get("outcome"),
+        "total_claimed": claim_details.get("total_claimed_amount"),
+        "approved_amount": claim_record.get("approved_amount"),
+        "risk_score": claim_details.get("risk_score"),
+        "risk_reasons": claim_details.get("risk_reasons"),
+        "flagged_line_items": mismatches,
+        "clause_citations": claim_record.get("clause_citations"),
+        "fired_rules": claim_record.get("fired_rule_ids"),
+        "clinical_facts": claim_details.get("clinical_facts")
+    }
