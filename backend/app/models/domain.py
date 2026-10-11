@@ -70,7 +70,9 @@ class ClinicalFacts(BaseModel):
     performed_procedure_codes: List[str] = Field(default_factory=list)
     prescribed_medications: List[str] = Field(default_factory=list)
     confidence_score: float = 1.0
-    evidence_snippets: Dict[str, str] = Field(default_factory=list)
+    field_confidences: Dict[str, float] = Field(default_factory=dict)
+    evidence_snippets: Dict[str, str] = Field(default_factory=dict)
+    flagged_uncertainties: List[str] = Field(default_factory=list)
 
 
 class PolicyCoverage(BaseModel):
