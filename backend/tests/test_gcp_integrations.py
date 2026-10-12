@@ -43,8 +43,12 @@ async def test_gcp_healthcare_api_ingest_endpoint(sample_nhcx_bundle):
         assert data["gcp_metadata"]["abha_id"] == "91-8844-2211-7700"
 
 
-def test_gemini_service_availability_and_fallback():
-    gemini = GeminiService(api_key=None)
+def test_gemini_service_availability_and_fallback(monkeypatch):
+    monkeypatch.setattr("app.core.config.settings.GEMINI_API_KEY", "")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    gemini = GeminiService()
+    gemini.client = None
     assert gemini.is_available() is False
 
     from app.models.domain import Claim, Decision, DecisionOutcome

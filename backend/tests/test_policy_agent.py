@@ -10,7 +10,7 @@ def policy_agent():
 
 
 def test_policy_agent_room_rent_cap_and_copay(policy_agent):
-    # Silver care: Room rent capped at 3,000/day, Copay 20%
+    # New India Assurance Yuva Bharat (PSU GIPSA): Room rent capped at 3,000/day, Copay 20%
     room_item = LineItem(
         line_number=1,
         service_date=datetime.now(timezone.utc),
@@ -26,7 +26,7 @@ def test_policy_agent_room_rent_cap_and_copay(policy_agent):
         claim_id="CLM-001",
         patient_id="PAT-001",
         hospital_id="HOSP-001",
-        policy_id="POL-SILVER-001",
+        policy_id="POL-NIA-YUVA-009",
         admission_time=datetime.now(timezone.utc),
         discharge_time=datetime.now(timezone.utc),
         total_claimed_amount=9000.0,
@@ -45,7 +45,7 @@ def test_policy_agent_room_rent_cap_and_copay(policy_agent):
 
 
 def test_policy_agent_waiting_period_deduction(policy_agent):
-    # Silver care: 30-day waiting period. Claim at Day 12 must be deducted 100%
+    # New India Assurance Yuva Bharat: 30-day waiting period. Claim at Day 12 must be deducted 100%
     proc_item = LineItem(
         line_number=1,
         service_date=datetime.now(timezone.utc),
@@ -61,7 +61,7 @@ def test_policy_agent_waiting_period_deduction(policy_agent):
         claim_id="CLM-002",
         patient_id="PAT-002",
         hospital_id="HOSP-001",
-        policy_id="POL-SILVER-001",
+        policy_id="POL-NIA-YUVA-009",
         admission_time=datetime.now(timezone.utc),
         discharge_time=datetime.now(timezone.utc),
         total_claimed_amount=55000.0,
@@ -75,8 +75,8 @@ def test_policy_agent_waiting_period_deduction(policy_agent):
     assert any("SEC-5.1" in c for c in citations)
 
 
-def test_policy_agent_gold_comprehensive_zero_deductions(policy_agent):
-    # Gold comprehensive: No room cap, 0% copay
+def test_policy_agent_hdfc_optima_zero_deductions(policy_agent):
+    # HDFC ERGO Optima Secure: No room cap, 0% copay
     room_item = LineItem(
         line_number=1,
         service_date=datetime.now(timezone.utc),
@@ -92,7 +92,7 @@ def test_policy_agent_gold_comprehensive_zero_deductions(policy_agent):
         claim_id="CLM-003",
         patient_id="PAT-003",
         hospital_id="HOSP-001",
-        policy_id="POL-GOLD-002",
+        policy_id="POL-HDFC-OPTIMA-002",
         admission_time=datetime.now(timezone.utc),
         discharge_time=datetime.now(timezone.utc),
         total_claimed_amount=18000.0,

@@ -28,9 +28,9 @@ with open(os.path.join(DATA_REF_DIR, "bundling_matrix.json"), "r") as f:
     BUNDLING_RULES = json.load(f)
 
 POLICY_FILES = [
-    "silver_health_plan.json",
-    "gold_comprehensive.json",
-    "corporate_floater.json"
+    "pol-star-assure-001.json",
+    "pol-hdfc-optima-002.json",
+    "pol-nia-yuva-009.json"
 ]
 POLICIES = []
 for pfile in POLICY_FILES:
@@ -329,8 +329,8 @@ def create_synthetic_claim(claim_idx: int, inject_fraud: bool, fraud_type: str =
             line_no += 1
 
         elif fraud_type == "FR-007_EXCLUSION_WAITING_PERIOD_VIOLATION":
-            # Associate claim with Silver plan and policy inception only 5 days ago
-            policy = POLICIES[0]  # Silver plan has 30-day waiting period
+            # Associate claim with Star Health Assure and policy inception only 5 days ago
+            policy = POLICIES[0]  # Star Health Assure has 30-day waiting period
             admit_time = datetime.now(timezone.utc) - timedelta(days=5)
             discharge_time = admit_time + timedelta(days=base_los)
             for item in line_items:

@@ -1,14 +1,18 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+import os
+from fastapi import APIRouter, HTTPException, BackgroundTasks, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 
 from app.models.domain import Claim, LineItem
 from app.orchestrator.pipeline import ClaimFlowOrchestrator, PipelineExecutionResult
+from app.services.pdf_bill_parser import PDFBillParser
 from app.core.logging import logger
 
 router = APIRouter(prefix="/claims", tags=["Claims"])
 orchestrator = ClaimFlowOrchestrator()
+pdf_parser = PDFBillParser()
 
 # In-memory claims repository for real-time dashboard
 PROCESSED_CLAIMS: Dict[str, Dict[str, Any]] = {}
@@ -81,3 +85,70 @@ async def get_evidence_pack(claim_id: str):
         "fired_rules": claim_record.get("fired_rule_ids"),
         "clinical_facts": claim_details.get("clinical_facts")
     }
+
+
+@router.post("/upload-pdf", response_model=Dict[str, Any])
+async def upload_and_adjudicate_bill_pdf(
+    file: UploadFile = File(...),
+    policy_id: str = Form("POL-STAR-ASSURE-001"),
+    policy_tenure_days: int = Form(180)
+):
+    """Uploads a hospital bill PDF, extracts structured clinical and billing line items
+    via Google Gemini Flash + pypdf, and executes real-time 15-minute clearinghouse adjudication.
+    """
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files (.pdf) are supported.")
+
+    try:
+        pdf_bytes = await file.read()
+        claim, discharge_summary, metadata = pdf_parser.parse_pdf_bill(
+            pdf_bytes=pdf_bytes,
+            policy_id=policy_id,
+            policy_tenure_days=policy_tenure_days,
+            filename=file.filename
+        )
+
+        # Adjudicate via clearinghouse orchestrator
+        result = await orchestrator.process_claim(
+            claim=claim,
+            discharge_text=discharge_summary,
+            policy_tenure_days=policy_tenure_days
+        )
+
+        data = result.to_dict()
+        data["claim_details"] = claim.model_dump()
+        data["line_items"] = data["claim_details"].get("line_items", [])
+        data["total_claimed_amount"] = claim.total_claimed_amount
+        data["pdf_metadata"] = metadata
+        data["patient_name"] = metadata.get("patient_name")
+        data["hospital_name"] = metadata.get("hospital_name")
+        data["primary_diagnosis"] = metadata.get("primary_diagnosis")
+
+        PROCESSED_CLAIMS[claim.claim_id] = data
+        return data
+    except Exception as e:
+        logger.error(f"Error processing uploaded PDF bill: {e}")
+        raise HTTPException(status_code=500, detail=f"PDF adjudication failed: {str(e)}")
+
+
+@router.get("/sample-pdf/{sample_name}")
+async def get_sample_bill_pdf(sample_name: str):
+    """Downloads or retrieves a pre-generated sample hospital bill PDF for immediate testing."""
+    sample_map = {
+        "apollo": "apollo_clean_hospital_bill.pdf",
+        "apollo_clean": "apollo_clean_hospital_bill.pdf",
+        "max": "max_unbundled_hospital_bill.pdf",
+        "max_unbundled": "max_unbundled_hospital_bill.pdf"
+    }
+    filename = sample_map.get(sample_name.lower()) or f"{sample_name}.pdf"
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+    file_path = os.path.join(base_dir, "data", "sample_bills", filename)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail=f"Sample PDF {filename} not found.")
+
+    return FileResponse(
+        file_path,
+        media_type="application/pdf",
+        filename=filename
+    )

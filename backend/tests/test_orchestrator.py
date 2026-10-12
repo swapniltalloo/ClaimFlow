@@ -54,7 +54,7 @@ async def test_orchestrator_clean_claim_pipeline():
         claim_id="CLM-ORCH-001",
         patient_id="PAT-001",
         hospital_id="HOSP-001",
-        policy_id="POL-GOLD-002",  # Gold has 0% copay, no room cap
+        policy_id="POL-HDFC-OPTIMA-002",  # HDFC Optima has 0% copay, no room cap
         admission_time=datetime.now(timezone.utc),
         discharge_time=datetime.now(timezone.utc),
         total_claimed_amount=61000.0,

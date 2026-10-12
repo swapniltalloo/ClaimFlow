@@ -7,8 +7,8 @@ const INITIAL_CLAIMS = [
     patient_id: "PAT-ABHA-9901",
     patient_name: "Rajesh Kumar (ABHA: 91-8273-6451-9901)",
     hospital_name: "Apollo Super Specialty Hospital (HIS-BLR-01)",
-    policy_id: "POL-GOLD-002",
-    plan_name: "Gold Comprehensive Shield (ABDM / NHCX)",
+    policy_id: "POL-HDFC-OPTIMA-002",
+    plan_name: "HDFC ERGO Optima Secure (ABDM / NHCX)",
     primary_icd10: "K35.80",
     primary_diagnosis: "Acute appendicitis (ABDM FHIR R4 Bundle)",
     total_claimed_amount: 68500.0,
@@ -46,7 +46,7 @@ const INITIAL_CLAIMS = [
       { line_number: 3, item_type: "MEDICATION", code: "MED-IV-ABX", description: "IV Antibiotics & Post-op Recovery", quantity: 1, unit_price: 4500, total_amount: 4500, approved_amount: 4500, verdict: "OK", verdict_reasons: [] }
     ],
     clause_citations: [
-      "SEC-1.1 Inpatient Surgical Benefit: 100% admissible under Gold Comprehensive Shield."
+      "SEC-1.1 Inpatient Surgical Benefit: 100% admissible under HDFC ERGO Optima Secure."
     ],
     fraud_layers: { rules: 0, anomaly: 8, supervised: 6, graph: 5 },
     ehr_excerpt: "DISCHARGE SUMMARY (ABDM DocumentReference):\nPatient Rajesh Kumar, 41M, ABHA ID: 91-8273-6451-9901. Admitted for acute lower abdominal pain. Diagnosed with acute appendicitis (ICD-10 K35.80). Underwent uneventful laparoscopic appendectomy (CPT-44970). Recovered well. Vital signs stable at discharge.",
@@ -77,8 +77,8 @@ const INITIAL_CLAIMS = [
     patient_id: "PAT-88129",
     patient_name: "Aarav Sharma",
     hospital_name: "Apollo Super Specialty Hospital",
-    policy_id: "POL-GOLD-002",
-    plan_name: "Gold Comprehensive Shield",
+    policy_id: "POL-HDFC-OPTIMA-002",
+    plan_name: "HDFC ERGO Optima Secure Policy",
     primary_icd10: "K35.80",
     primary_diagnosis: "Unspecified acute appendicitis",
     total_claimed_amount: 67000.0,
@@ -115,8 +115,8 @@ const INITIAL_CLAIMS = [
     patient_id: "PAT-33291",
     patient_name: "Priya Patel",
     hospital_name: "City Metro General Hospital",
-    policy_id: "POL-SILVER-001",
-    plan_name: "Silver Care Basic Plan",
+    policy_id: "POL-NIA-YUVA-009",
+    plan_name: "New India Assurance Yuva Bharat (PSU GIPSA)",
     primary_icd10: "K35.80",
     primary_diagnosis: "Acute appendicitis with unbundling",
     total_claimed_amount: 92500.0,
@@ -158,8 +158,8 @@ const INITIAL_CLAIMS = [
     patient_id: "PAT-19042",
     patient_name: "Aditya Verma",
     hospital_name: "Sunrise Community Health Care",
-    policy_id: "POL-CORP-003",
-    plan_name: "Corporate Group Floater",
+    policy_id: "POL-STAR-ASSURE-001",
+    plan_name: "Star Health Assure Insurance Policy",
     primary_icd10: "A97.0",
     primary_diagnosis: "Dengue fever with Phantom ICU",
     total_claimed_amount: 142000.0,
@@ -306,6 +306,9 @@ function renderApp() {
           <button id="btn-ingest-nhcx" class="btn btn-gcp-nhcx">
             ⚡ Ingest ABDM/NHCX (GCP Healthcare API)
           </button>
+          <button id="btn-upload-pdf-modal" class="btn btn-primary" style="background: linear-gradient(135deg, #2563eb, #7c3aed); border: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);">
+            <span>📄</span> Upload Hospital Bill (PDF)
+          </button>
           <button id="btn-inject-claim" class="btn btn-secondary">
             + Inject Live Discharge
           </button>
@@ -354,6 +357,7 @@ function renderApp() {
         </section>
       </div>
     </main>
+    <div id="modal-container"></div>
   `;
 
   attachEventHandlers();
@@ -836,8 +840,8 @@ function attachEventHandlers() {
               patient_id: "PAT-ABHA-9901",
               patient_name: "Rajesh Kumar (ABHA: 91-8273-6451-9901)",
               hospital_name: "Apollo Super Specialty Hospital (HIS-BLR-01)",
-              policy_id: "POL-GOLD-002",
-              plan_name: "Gold Comprehensive Shield (ABDM / NHCX)",
+              policy_id: "POL-HDFC-OPTIMA-002",
+              plan_name: "HDFC ERGO Optima Secure (ABDM / NHCX)",
               primary_icd10: "K35.80",
               primary_diagnosis: "Acute appendicitis (ABDM FHIR Ingested)",
               total_claimed_amount: 68500.0,
@@ -896,6 +900,14 @@ function attachEventHandlers() {
     });
   }
 
+  // Upload Hospital Bill (PDF) Modal trigger
+  const uploadPdfBtn = document.getElementById('btn-upload-pdf-modal');
+  if (uploadPdfBtn) {
+    uploadPdfBtn.addEventListener('click', () => {
+      openUploadPdfModal();
+    });
+  }
+
   // Inject fresh simulated discharge via the live FastAPI backend orchestrator
   const injectBtn = document.getElementById('btn-inject-claim');
   if (injectBtn) {
@@ -909,8 +921,8 @@ function attachEventHandlers() {
       const patientId = `PAT-${Math.floor(Math.random() * 89999 + 10000)}`;
       const patientName = ["Kavita Singh", "Rohan Mehta", "Sneha Iyer", "Vikram Reddy", "Arjun Nair"][Math.floor(Math.random() * 5)];
       const hospitalName = isClean ? "Max Healthcare Multispecialty" : "Sunrise Community Health Care";
-      const policyId = isClean ? "POL-GOLD-002" : "POL-SILVER-001";
-      const planName = isClean ? "Gold Comprehensive Shield" : "Silver Care Basic Plan";
+      const policyId = isClean ? "POL-HDFC-OPTIMA-002" : "POL-NIA-YUVA-009";
+      const planName = isClean ? "HDFC ERGO Optima Secure Policy" : "New India Assurance Yuva Bharat";
       
       const payload = {
         claim: {
@@ -1051,6 +1063,297 @@ function attachEventHandlers() {
   }
 }
 
+function openUploadPdfModal() {
+  const container = document.getElementById('modal-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="modal-backdrop" id="pdf-modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>
+            <span style="font-size: 1.25rem;">📄</span>
+            <span>Upload Hospital Bill (PDF)</span>
+          </h3>
+          <button class="modal-close-btn" id="modal-close-x">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+            Upload any hospital discharge invoice or itemized bill. 
+            ClaimFlow uses <strong>Google Gemini Flash & pypdf</strong> to automatically extract line items, match clauses against real Indian health insurance policies via Vertex AI RAG, and adjudicate in &lt; 15 seconds.
+          </p>
+
+          <!-- Drop Zone -->
+          <div id="pdf-drop-zone" class="drop-zone">
+            <input type="file" id="pdf-file-input" accept=".pdf" style="display: none;" />
+            <div class="drop-zone-icon">📑</div>
+            <div class="drop-zone-title" id="drop-zone-title">Drag & drop your hospital bill PDF here</div>
+            <div class="drop-zone-subtitle" id="drop-zone-subtitle">or click to browse (.pdf files supported)</div>
+          </div>
+
+          <div id="selected-file-container" style="display: none;">
+            <div class="selected-file-badge">
+              <span id="selected-file-name">📄 hospital_bill.pdf</span>
+              <button id="btn-remove-file" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; font-weight:bold;">&times;</button>
+            </div>
+          </div>
+
+          <!-- Quick Test Sample Bills -->
+          <div class="form-group">
+            <label>Or test immediately with a sample hospital bill:</label>
+            <div class="sample-buttons-grid">
+              <button type="button" class="sample-btn" id="btn-load-apollo">
+                🏥 Apollo Clean Bill (Appendectomy - INR 73,000)
+              </button>
+              <button type="button" class="sample-btn" id="btn-load-max">
+                🏥 Max Disputed Bill (Unbundled Lavage - INR 92,500)
+              </button>
+            </div>
+          </div>
+
+          <!-- Policy Selector -->
+          <div class="form-group">
+            <label for="pdf-policy-select">Select Insurance Policy to Adjudicate Against (9 Real Policies):</label>
+            <select id="pdf-policy-select" class="form-control">
+              <option value="POL-STAR-ASSURE-001">Star Health Assure (1% Room Rent Cap, PPN Tariffs)</option>
+              <option value="POL-HDFC-OPTIMA-001">HDFC ERGO Optima Secure (Zero Room Cap, 2x Restoration)</option>
+              <option value="POL-CARE-HEALTH-001">Care Health Insurance (Single Private Room)</option>
+              <option value="POL-NIVA-REASSURE-001">Niva Bupa ReAssure 3.0 (No Sub-limits)</option>
+              <option value="POL-NEW-INDIA-YUVA-001">The New India Assurance Yuva Bharat (PSU GIPSA PPN)</option>
+              <option value="POL-ADITYA-ACTIV-001">Aditya Birla Activ Health (Chronic Disease Shield)</option>
+              <option value="POL-ICICI-ELEVATE-001">ICICI Lombard Elevate (Infinite Sum Insured)</option>
+              <option value="POL-BAJAJ-GUARD-001">Bajaj Allianz Health Guard (Standard GIPSA)</option>
+              <option value="POL-TATA-MEDICARE-001">Tata AIG MediCare (Global OPD & Daycare)</option>
+            </select>
+          </div>
+
+          <!-- Policy Tenure -->
+          <div class="form-group">
+            <label for="pdf-tenure-input">Policy In-Force Tenure (Days):</label>
+            <input type="number" id="pdf-tenure-input" class="form-control" value="180" min="1" max="1500" />
+          </div>
+
+          <!-- Live Progress Steps -->
+          <div id="pdf-processing-status" class="processing-banner" style="display: none;">
+            <div style="font-size: 0.82rem; font-weight: 600; color: #38bdf8; margin-bottom: 0.25rem;">
+              ⚡ Running Clearinghouse Autonomous Pipeline...
+            </div>
+            <div class="processing-step" id="proc-step-1">
+              <span>⏳</span> <span>Step 1: Extracting text & tabular charges via pypdf...</span>
+            </div>
+            <div class="processing-step" id="proc-step-2">
+              <span>⏳</span> <span>Step 2: Google Gemini Flash clinical entity structuring...</span>
+            </div>
+            <div class="processing-step" id="proc-step-3">
+              <span>⏳</span> <span>Step 3: Vertex AI Vector RAG clause retrieval across 9 policies...</span>
+            </div>
+            <div class="processing-step" id="proc-step-4">
+              <span>⏳</span> <span>Step 4: Layered Fraud & Unbundling verification...</span>
+            </div>
+            <div class="processing-step" id="proc-step-5">
+              <span>⏳</span> <span>Step 5: Adjudication & Instant Settlement decision!</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="modal-btn-cancel">Cancel</button>
+          <button class="btn btn-primary" id="modal-btn-submit" style="background: linear-gradient(135deg, #2563eb, #7c3aed); border: none;">
+            ⚡ Run AI Adjudication & Settle
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  let currentFile = null;
+
+  const closeModal = () => {
+    container.innerHTML = '';
+  };
+
+  document.getElementById('modal-close-x').onclick = closeModal;
+  document.getElementById('modal-btn-cancel').onclick = closeModal;
+
+  const dropZone = document.getElementById('pdf-drop-zone');
+  const fileInput = document.getElementById('pdf-file-input');
+  const selectedContainer = document.getElementById('selected-file-container');
+  const selectedFileName = document.getElementById('selected-file-name');
+  const removeBtn = document.getElementById('btn-remove-file');
+
+  dropZone.onclick = () => fileInput.click();
+
+  const handleSelectedFile = (file) => {
+    if (!file || !file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Please upload a valid PDF file (.pdf).');
+      return;
+    }
+    currentFile = file;
+    selectedFileName.innerText = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    selectedContainer.style.display = 'block';
+    dropZone.style.display = 'none';
+  };
+
+  fileInput.onchange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleSelectedFile(e.target.files[0]);
+    }
+  };
+
+  removeBtn.onclick = () => {
+    currentFile = null;
+    fileInput.value = '';
+    selectedContainer.style.display = 'none';
+    dropZone.style.display = 'block';
+  };
+
+  dropZone.ondragover = (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  };
+
+  dropZone.ondragleave = () => {
+    dropZone.classList.remove('drag-over');
+  };
+
+  dropZone.ondrop = (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleSelectedFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  // Sample bill buttons
+  document.getElementById('btn-load-apollo').onclick = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/claims/sample-pdf/apollo');
+      const blob = await res.blob();
+      const sampleFile = new File([blob], 'apollo_clean_hospital_bill.pdf', { type: 'application/pdf' });
+      handleSelectedFile(sampleFile);
+    } catch (err) {
+      console.warn('Could not load sample Apollo bill:', err);
+    }
+  };
+
+  document.getElementById('btn-load-max').onclick = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/claims/sample-pdf/max');
+      const blob = await res.blob();
+      const sampleFile = new File([blob], 'max_unbundled_hospital_bill.pdf', { type: 'application/pdf' });
+      handleSelectedFile(sampleFile);
+    } catch (err) {
+      console.warn('Could not load sample Max bill:', err);
+    }
+  };
+
+  // Submit button
+  const submitBtn = document.getElementById('modal-btn-submit');
+  submitBtn.onclick = async () => {
+    if (!currentFile) {
+      alert('Please upload a PDF hospital bill or select a sample bill first.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    document.getElementById('modal-btn-cancel').disabled = true;
+    const progressBanner = document.getElementById('pdf-processing-status');
+    progressBanner.style.display = 'flex';
+
+    // Step animations
+    const setStep = (stepNum, status) => {
+      const el = document.getElementById(`proc-step-${stepNum}`);
+      if (!el) return;
+      if (status === 'active') {
+        el.className = 'processing-step active';
+        el.children[0].innerText = '⚡';
+      } else if (status === 'done') {
+        el.className = 'processing-step done';
+        el.children[0].innerText = '✅';
+      }
+    };
+
+    setStep(1, 'active');
+    setTimeout(() => { setStep(1, 'done'); setStep(2, 'active'); }, 500);
+    setTimeout(() => { setStep(2, 'done'); setStep(3, 'active'); }, 1200);
+    setTimeout(() => { setStep(3, 'done'); setStep(4, 'active'); }, 2000);
+
+    const policyId = document.getElementById('pdf-policy-select').value;
+    const tenureDays = parseInt(document.getElementById('pdf-tenure-input').value) || 180;
+    const policyName = document.getElementById('pdf-policy-select').options[document.getElementById('pdf-policy-select').selectedIndex].text;
+
+    const formData = new FormData();
+    formData.append('file', currentFile);
+    formData.append('policy_id', policyId);
+    formData.append('policy_tenure_days', tenureDays);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/claims/upload-pdf', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.detail || `Server error: ${response.status}`);
+      }
+
+      setStep(4, 'done');
+      setStep(5, 'done');
+
+      const apiResult = await response.json();
+      const meta = apiResult.pdf_metadata || {};
+
+      const newClaim = {
+        claim_id: apiResult.claim_id,
+        patient_id: apiResult.claim_details ? apiResult.claim_details.patient_id : "PAT-PDF",
+        patient_name: meta.patient_name || apiResult.patient_name || "Patient (PDF Upload)",
+        hospital_name: meta.hospital_name || apiResult.hospital_name || "Hospital",
+        policy_id: policyId,
+        plan_name: policyName,
+        primary_icd10: meta.primary_icd10 || "K35.80",
+        primary_diagnosis: `${meta.primary_diagnosis || "Discharge Bill"} (PDF Upload)`,
+        total_claimed_amount: apiResult.total_claimed_amount || meta.total_claimed_amount || 0.0,
+        approved_amount: apiResult.approved_amount,
+        outcome: apiResult.outcome,
+        risk_score: apiResult.claim_details ? apiResult.claim_details.risk_score : 18.0,
+        risk_reasons: apiResult.claim_details ? apiResult.claim_details.risk_reasons : [],
+        scenario: "pdf_upload",
+        latency_sec: (apiResult.total_latency_ms / 1000).toFixed(2),
+        audit_hash: apiResult.audit_hash,
+        is_pdf_upload: true,
+        pdf_meta: meta,
+        clinical_facts: {
+          primary_diagnosis_code: meta.primary_icd10 || "K35.80",
+          primary_diagnosis_name: meta.primary_diagnosis || "Inpatient Care",
+          admit_time: "2026-10-10 09:30",
+          discharge_time: "2026-10-12 11:30",
+          room_stay_days: 2,
+          icu_stay_days: 0,
+          confidence_score: 0.99,
+          performed_procedures: ["CPT-44970"]
+        },
+        line_items: apiResult.line_items || (apiResult.claim_details ? apiResult.claim_details.line_items : []),
+        clause_citations: apiResult.clause_citations.length ? apiResult.clause_citations : ["SEC-1.1 Inpatient Coverage: Verified against policy RAG store."],
+        fraud_layers: { rules: 0, anomaly: 12, supervised: 10, graph: 8 },
+        ehr_excerpt: `DISCHARGE SUMMARY (Extracted from ${meta.filename || "PDF Bill"} via ${meta.extraction_engine || "Google Gemini"}):\nPatient ${meta.patient_name}. Admitted to ${meta.hospital_name}. Diagnosis: ${meta.primary_diagnosis}.`
+      };
+
+      setTimeout(() => {
+        closeModal();
+        claims.unshift(newClaim);
+        selectedClaim = newClaim;
+        currentTab = 'adjudication';
+        renderApp();
+      }, 700);
+
+    } catch (err) {
+      alert(`Upload adjudication error: ${err.message}`);
+      submitBtn.disabled = false;
+      document.getElementById('modal-btn-cancel').disabled = false;
+      progressBanner.style.display = 'none';
+    }
+  };
+}
 
 // Initial render
 renderApp();

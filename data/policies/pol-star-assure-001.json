@@ -2,6 +2,7 @@
   "policy_id": "POL-STAR-ASSURE-001",
   "plan_name": "Star Health Assure Insurance Policy",
   "insurer": "Star Health and Allied Insurance",
+  "sum_insured": 750000.0,
   "room_rent_cap_daily": null,
   "room_category": "Single Private A/C Room",
   "icu_rent_cap_daily": null,
@@ -20,5 +21,12 @@
     "CATARACT": 40000.0,
     "HERNIA": 60000.0,
     "JOINT_REPLACEMENT": 150000.0
-  }
+  },
+  "clauses": [
+    {
+      "clause_id": "SEC-1.1",
+      "title": "Inpatient Surgical & Hospitalization Entitlement",
+      "text": "100% admissible coverage for medical and surgical hospitalization under Star Assure."
+    }
+  ]
 }

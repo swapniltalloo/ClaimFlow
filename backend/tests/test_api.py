@@ -31,7 +31,7 @@ async def test_claims_discharge_api_flow():
             "claim_id": "CLM-API-TEST-001",
             "patient_id": "PAT-001",
             "hospital_id": "HOSP-001",
-            "policy_id": "POL-GOLD-002",
+            "policy_id": "POL-HDFC-OPTIMA-002",
             "admission_time": datetime.now(timezone.utc).isoformat(),
             "discharge_time": datetime.now(timezone.utc).isoformat(),
             "total_claimed_amount": 55000.0,

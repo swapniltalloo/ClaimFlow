@@ -2,6 +2,7 @@
   "policy_id": "POL-HDFC-OPTIMA-002",
   "plan_name": "HDFC ERGO Optima Secure Policy",
   "insurer": "HDFC ERGO General Insurance",
+  "sum_insured": 1000000.0,
   "room_rent_cap_daily": null,
   "room_category": "Any Room Category",
   "icu_rent_cap_daily": null,
@@ -20,5 +21,17 @@
     "CATARACT": 40000.0,
     "HERNIA": 60000.0,
     "JOINT_REPLACEMENT": 150000.0
-  }
+  },
+  "clauses": [
+    {
+      "clause_id": "SEC-1.1",
+      "title": "Zero Room Rent Capping Entitlement",
+      "text": "The insured is entitled to any room category accommodation with zero proportionate deductions."
+    },
+    {
+      "clause_id": "SEC-2.1",
+      "title": "Comprehensive Inpatient Surgical Benefit",
+      "text": "100% of approved surgical expenses covered with zero co-payment under Optima Secure."
+    }
+  ]
 }

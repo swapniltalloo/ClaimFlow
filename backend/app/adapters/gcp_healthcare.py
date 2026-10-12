@@ -130,7 +130,7 @@ class GCPHealthcareFHIRAdapter:
             if "nhcx" in ident.get("system", ""):
                 claim_id = ident.get("value", claim_id)
 
-        policy_id = "POL-GOLD-002"
+        policy_id = "POL-HDFC-OPTIMA-002"
         for ins in claim_res.get("insurance", []):
             cov_ref = ins.get("coverage", {}).get("reference", "")
             if cov_ref:

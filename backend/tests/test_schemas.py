@@ -54,7 +54,7 @@ def test_claim_and_line_item_schema():
         claim_id="CLM-001",
         patient_id="PAT-001",
         hospital_id="HOSP-001",
-        policy_id="POL-SILVER-001",
+        policy_id="POL-NIA-YUVA-009",
         admission_time=datetime(2026, 10, 1, 10, 0),
         discharge_time=datetime(2026, 10, 3, 14, 0),
         total_claimed_amount=55000.0,
