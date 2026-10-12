@@ -99,7 +99,10 @@ async def get_gcp_cloud_status():
                 "specification": "FHIR R4",
                 "profiles": ["ABDM ClaimBundle", "NHCX ClaimResponse"],
                 "active_store_uri": f"projects/{settings.GCP_PROJECT_ID}/locations/{settings.GCP_LOCATION}/datasets/{settings.GCP_DATASET_ID}/fhirStores/{settings.GCP_FHIR_STORE_ID}",
-                "status": "Ready for HIS Ingestion"
+                "api_key_configured": bool(fhir_adapter.api_key),
+                "api_key_masked": f"{fhir_adapter.api_key[:6]}...{fhir_adapter.api_key[-4:]}" if fhir_adapter.api_key else None,
+                "status": "Ready for Hospital HIS Ingestion (API Key Configured)" if fhir_adapter.api_key else "Ready for HIS Ingestion"
             }
+
         }
     }

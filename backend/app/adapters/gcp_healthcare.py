@@ -28,12 +28,20 @@ class GCPHealthcareFHIRAdapter:
         project_id: Optional[str] = None,
         location: Optional[str] = None,
         dataset_id: Optional[str] = None,
-        fhir_store_id: Optional[str] = None
+        fhir_store_id: Optional[str] = None,
+        api_key: Optional[str] = None
     ):
-        self.project_id = project_id or os.environ.get("GCP_PROJECT_ID", "claimflow-hackathon-2026")
-        self.location = location or os.environ.get("GCP_LOCATION", "asia-south1")  # Google Cloud India region
-        self.dataset_id = dataset_id or os.environ.get("GCP_DATASET_ID", "abdm-nhcx-dataset")
-        self.fhir_store_id = fhir_store_id or os.environ.get("GCP_FHIR_STORE_ID", "nhcx-claims-store")
+        self.project_id = project_id or os.environ.get("GCP_PROJECT_ID") or settings.GCP_PROJECT_ID
+        self.location = location or os.environ.get("GCP_LOCATION") or settings.GCP_LOCATION
+        self.dataset_id = dataset_id or os.environ.get("GCP_DATASET_ID") or settings.GCP_DATASET_ID
+        self.fhir_store_id = fhir_store_id or os.environ.get("GCP_FHIR_STORE_ID") or settings.GCP_FHIR_STORE_ID
+        self.api_key = (
+            api_key
+            or os.environ.get("GCP_HEALTHCARE_API_KEY")
+            or os.environ.get("HEALTHCARE_API_KEY")
+            or settings.GCP_HEALTHCARE_API_KEY
+            or settings.HEALTHCARE_API_KEY
+        )
 
         self.base_url = (
             f"https://healthcare.googleapis.com/v1/projects/{self.project_id}/"
@@ -196,27 +204,39 @@ class GCPHealthcareFHIRAdapter:
     def fetch_bundle(self, bundle_id: str) -> Dict[str, Any]:
         """Fetches FHIR Bundle from Google Cloud Healthcare API or local sandbox store."""
         # Check if local sample or file
-        if bundle_id in {"NHCX-ABDM-CLAIM-BUNDLE-001", "default", "sample"} or not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+        if bundle_id in {"NHCX-ABDM-CLAIM-BUNDLE-001", "default", "sample"}:
             if os.path.exists(SAMPLE_NHCX_PATH):
                 with open(SAMPLE_NHCX_PATH, "r", encoding="utf-8") as f:
                     return json.load(f)
 
-        # In production GCP mode with GOOGLE_APPLICATION_CREDENTIALS, use google-auth session:
-        try:
-            import google.auth
-            from google.auth.transport.requests import AuthorizedSession
-            credentials, project = google.auth.default(
-                scopes=["https://www.googleapis.com/auth/cloud-platform"]
-            )
-            authed_session = AuthorizedSession(credentials)
-            url = f"{self.base_url}/Bundle/{bundle_id}"
-            resp = authed_session.get(url)
-            if resp.status_code == 200:
-                return resp.json()
-            else:
-                logger.warning(f"GCP Healthcare API returned {resp.status_code}. Fallback to sample bundle.")
-        except Exception as e:
-            logger.info(f"Google Cloud Healthcare API authentication note: {e}. Using ABDM/NHCX reference bundle.")
+        # 1. If Google Cloud Healthcare API Key is configured, query directly via REST
+        if self.api_key:
+            try:
+                import httpx
+                url = f"{self.base_url}/Bundle/{bundle_id}?key={self.api_key}"
+                resp = httpx.get(url, timeout=10.0)
+                if resp.status_code == 200:
+                    return resp.json()
+                else:
+                    logger.warning(f"Google Cloud Healthcare API HTTP {resp.status_code}. Using local reference bundle.")
+            except Exception as e:
+                logger.warning(f"GCP Healthcare API query note: {e}")
+
+        # 2. Production GCP mode with GOOGLE_APPLICATION_CREDENTIALS
+        if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+            try:
+                import google.auth
+                from google.auth.transport.requests import AuthorizedSession
+                credentials, project = google.auth.default(
+                    scopes=["https://www.googleapis.com/auth/cloud-platform"]
+                )
+                authed_session = AuthorizedSession(credentials)
+                url = f"{self.base_url}/Bundle/{bundle_id}"
+                resp = authed_session.get(url)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception as e:
+                logger.info(f"Google Cloud Healthcare API authentication note: {e}")
 
         with open(SAMPLE_NHCX_PATH, "r", encoding="utf-8") as f:
             return json.load(f)

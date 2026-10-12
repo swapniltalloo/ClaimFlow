@@ -5,7 +5,7 @@ from app.models.domain import ClinicalFacts, Claim, Decision
 from app.core.logging import logger
 from app.core.config import settings
 
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-flash-latest"
 
 
 class GeminiService:

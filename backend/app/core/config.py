@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     # Google Cloud & AI Settings
     GEMINI_API_KEY: str | None = None
     GOOGLE_API_KEY: str | None = None
+    GCP_HEALTHCARE_API_KEY: str | None = None
+    HEALTHCARE_API_KEY: str | None = None
     GCP_PROJECT_ID: str = "claimflow-prod"
     GCP_LOCATION: str = "asia-south1"
     GCP_DATASET_ID: str = "abdm-claims"
