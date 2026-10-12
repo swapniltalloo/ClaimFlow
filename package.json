@@ -1,21 +1,11 @@
 {
   "name": "claimflow-workspace",
   "version": "1.0.0",
-  "description": "ClaimFlow: Real-Time Insurance Claim Settlement & Fraud Defense",
+  "private": true,
   "scripts": {
     "dev": "npm --prefix frontend run dev",
-    "start": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
-    "test": "npm --prefix frontend run test"
-  },
-  "keywords": [
-    "claimflow",
-    "healthcare",
-    "insurance",
-    "fraud-detection",
-    "fastapi",
-    "clearinghouse"
-  ],
-  "author": "",
-  "license": "MIT"
+    "preview": "npm --prefix frontend run preview",
+    "test": "powershell -Command \"$env:PYTHONPATH='backend'; .venv\\Scripts\\pytest backend\\tests -v\""
+  }
 }
