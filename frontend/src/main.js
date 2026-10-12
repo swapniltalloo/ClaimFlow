@@ -468,19 +468,122 @@ function attachEventHandlers() {
     });
   });
 
-  // Inject fresh simulated claim
+  // Inject fresh simulated claim via the live FastAPI backend orchestrator
   const injectBtn = document.getElementById('btn-inject-claim');
   if (injectBtn) {
-    injectBtn.addEventListener('click', () => {
+    injectBtn.addEventListener('click', async () => {
+      injectBtn.innerText = '⚡ Processing Pipeline...';
+      injectBtn.disabled = true;
+
       const newIdx = claims.length + 101;
       const isClean = Math.random() > 0.35;
-      const newClaim = {
-        claim_id: `CLM-2026-${String(newIdx).padStart(5, '0')}`,
-        patient_id: `PAT-${Math.floor(Math.random() * 89999 + 10000)}`,
-        patient_name: ["Kavita Singh", "Rohan Mehta", "Sneha Iyer", "Vikram Reddy"][Math.floor(Math.random() * 4)],
-        hospital_name: "Max Healthcare Multispecialty",
-        policy_id: "POL-GOLD-002",
-        plan_name: "Gold Comprehensive Shield",
+      const claimId = `CLM-2026-${String(newIdx).padStart(5, '0')}`;
+      const patientId = `PAT-${Math.floor(Math.random() * 89999 + 10000)}`;
+      const patientName = ["Kavita Singh", "Rohan Mehta", "Sneha Iyer", "Vikram Reddy", "Arjun Nair"][Math.floor(Math.random() * 5)];
+      const hospitalName = isClean ? "Max Healthcare Multispecialty" : "Sunrise Community Health Care";
+      const policyId = isClean ? "POL-GOLD-002" : "POL-SILVER-001";
+      const planName = isClean ? "Gold Comprehensive Shield" : "Silver Care Basic Plan";
+      
+      const payload = {
+        claim: {
+          claim_id: claimId,
+          patient_id: patientId,
+          hospital_id: isClean ? "HOSP-003" : "HOSP-005",
+          policy_id: policyId,
+          admission_time: new Date(Date.now() - 86400000 * 2).toISOString(),
+          discharge_time: new Date().toISOString(),
+          total_claimed_amount: isClean ? 52000.0 : 185000.0,
+          line_items: [
+            {
+              line_number: 1,
+              service_date: new Date(Date.now() - 86400000).toISOString(),
+              item_type: "PROCEDURE",
+              code: isClean ? "CPT-49505" : "CPT-27236",
+              description: isClean ? "Laparoscopic Hernia Mesh Repair" : "Femur Fracture ORIF (Overpriced Implant Pack)",
+              quantity: 1.0,
+              unit_price: isClean ? 48000.0 : 160000.0,
+              total_amount: isClean ? 48000.0 : 160000.0
+            },
+            {
+              line_number: 2,
+              service_date: new Date(Date.now() - 86400000 * 2).toISOString(),
+              item_type: "ROOM_ICU",
+              code: "ROOM-STD-PVT",
+              description: "Standard Private Room Accommodation",
+              quantity: 1.0,
+              unit_price: 4000.0,
+              total_amount: 4000.0
+            }
+          ]
+        },
+        discharge_summary: isClean
+          ? `DISCHARGE SUMMARY: Patient ${patientName} (UHID-55443322). Admitted with acute right inguinal hernia (K40.90). Underwent uncomplicated Laparoscopic Hernia Repair with mesh (CPT-49505). Afebrile, ambulating, fit for discharge.`
+          : `DISCHARGE SUMMARY: Patient ${patientName} (UHID-99887766). Admitted following road traffic accident with closed femur fracture (S72.001A). Operative fixation performed with standard plate. Billed implant pack priced significantly above regional tariff standard.`,
+        policy_tenure_days: isClean ? 240 : 180
+      };
+
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/claims/discharge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          const apiResult = await response.json();
+          const newClaim = {
+            claim_id: claimId,
+            patient_id: patientId,
+            patient_name: patientName,
+            hospital_name: hospitalName,
+            policy_id: policyId,
+            plan_name: planName,
+            primary_icd10: isClean ? "K40.90" : "S72.001A",
+            primary_diagnosis: isClean ? "Unilateral inguinal hernia" : "Fracture neck of femur with price inflation",
+            total_claimed_amount: payload.claim.total_claimed_amount,
+            approved_amount: apiResult.approved_amount,
+            outcome: apiResult.outcome,
+            risk_score: apiResult.claim_details ? apiResult.claim_details.risk_score : (isClean ? 15.0 : 78.0),
+            risk_reasons: apiResult.claim_details ? apiResult.claim_details.risk_reasons : (isClean ? [] : ["FR-008 Price Inflation"]),
+            scenario: isClean ? "1" : "3",
+            latency_sec: (apiResult.total_latency_ms / 1000).toFixed(2),
+            audit_hash: apiResult.audit_hash,
+            clinical_facts: {
+              primary_diagnosis_code: isClean ? "K40.90" : "S72.001A",
+              primary_diagnosis_name: isClean ? "Inguinal hernia repair" : "Femur fracture ORIF",
+              admit_time: "2026-10-11 08:00",
+              discharge_time: "2026-10-12 12:00",
+              room_stay_days: 1,
+              icu_stay_days: 0,
+              confidence_score: 0.98,
+              performed_procedures: [isClean ? "CPT-49505" : "CPT-27236"]
+            },
+            line_items: apiResult.claim_details ? apiResult.claim_details.line_items : payload.claim.line_items,
+            clause_citations: apiResult.clause_citations.length ? apiResult.clause_citations : ["SEC-1.1 Inpatient Standard Coverage"],
+            fraud_layers: isClean ? { rules: 0, anomaly: 14, supervised: 12, graph: 10 } : { rules: 75, anomaly: 82, supervised: 72, graph: 45 },
+            ehr_excerpt: payload.discharge_summary
+          };
+
+          claims.unshift(newClaim);
+          selectedClaim = newClaim;
+          renderApp();
+          return;
+        }
+      } catch (err) {
+        console.warn('API call failed, falling back to local simulation:', err);
+      } finally {
+        injectBtn.innerText = '+ Inject Live Discharge';
+        injectBtn.disabled = false;
+      }
+
+      // Fallback local simulation if backend unavailable
+      const fallbackClaim = {
+        claim_id: claimId,
+        patient_id: patientId,
+        patient_name: patientName,
+        hospital_name: hospitalName,
+        policy_id: policyId,
+        plan_name: planName,
         primary_icd10: isClean ? "K40.90" : "S72.001A",
         primary_diagnosis: isClean ? "Unilateral inguinal hernia" : "Fracture neck of femur with price inflation",
         total_claimed_amount: isClean ? 52000.0 : 185000.0,
@@ -506,11 +609,11 @@ function attachEventHandlers() {
         ],
         clause_citations: isClean ? ["SEC-1.1 Inpatient Surgical Benefit: 100% admissible."] : ["SEC-3.1 Price Cap Deduction"],
         fraud_layers: isClean ? { rules: 10, anomaly: 15, supervised: 12, graph: 10 } : { rules: 75, anomaly: 82, supervised: 70, graph: 40 },
-        ehr_excerpt: isClean ? "Clinical Summary: Elective hernia mesh repair completed. Patient ambulating, wound clean. Fit for discharge." : "Clinical Summary: Closed fracture femur. Surgical fixation performed with standard implants."
+        ehr_excerpt: payload.discharge_summary
       };
 
-      claims.unshift(newClaim);
-      selectedClaim = newClaim;
+      claims.unshift(fallbackClaim);
+      selectedClaim = fallbackClaim;
       renderApp();
     });
   }
