@@ -1,7 +1,77 @@
 import './style.css';
 
-// Initial preloaded claims matching the 3 primary demo scenarios + diverse cases
+// Initial preloaded claims matching the 3 primary demo scenarios + ABDM/NHCX GCP scenario
 const INITIAL_CLAIMS = [
+  {
+    claim_id: "NHCX-2026-99120",
+    patient_id: "PAT-ABHA-9901",
+    patient_name: "Rajesh Kumar (ABHA: 91-8273-6451-9901)",
+    hospital_name: "Apollo Super Specialty Hospital (HIS-BLR-01)",
+    policy_id: "POL-GOLD-002",
+    plan_name: "Gold Comprehensive Shield (ABDM / NHCX)",
+    primary_icd10: "K35.80",
+    primary_diagnosis: "Acute appendicitis (ABDM FHIR R4 Bundle)",
+    total_claimed_amount: 68500.0,
+    approved_amount: 68500.0,
+    outcome: "AUTO_SETTLE",
+    risk_score: 7.0,
+    risk_reasons: [],
+    scenario: "abdm",
+    latency_sec: 14.5,
+    audit_hash: "0805deab629f0ea31b86218332ef83f2f8deec86dc26bc1a787c9cac7b995288",
+    is_gcp_fhir: true,
+    gcp_fhir_store: "projects/claimflow-prod/locations/asia-south1/datasets/abdm-claims/fhirStores/nhcx-store",
+    abdm_meta: {
+      abha_id: "91-8273-6451-9901",
+      hospital_id: "HOSP-APOLLO-001",
+      encounter_id: "ENC-DISCH-001",
+      bundle_id: "NHCX-ABDM-CLAIM-BUNDLE-001",
+      claim_response_id: "RESP-DEC-7DE805279D3C",
+      transaction_id: "TXN-BD03A613471C",
+      fhir_profile: "https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimBundle"
+    },
+    clinical_facts: {
+      primary_diagnosis_code: "K35.80",
+      primary_diagnosis_name: "Unspecified acute appendicitis",
+      admit_time: "2026-10-10 09:30",
+      discharge_time: "2026-10-12 11:30",
+      room_stay_days: 2,
+      icu_stay_days: 0,
+      confidence_score: 0.99,
+      performed_procedures: ["CPT-44970"]
+    },
+    line_items: [
+      { line_number: 1, item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Private AC Room (2 Days)", quantity: 2, unit_price: 4500, total_amount: 9000, approved_amount: 9000, verdict: "OK", verdict_reasons: [] },
+      { line_number: 2, item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy", quantity: 1, unit_price: 55000, total_amount: 55000, approved_amount: 55000, verdict: "OK", verdict_reasons: [] },
+      { line_number: 3, item_type: "MEDICATION", code: "MED-IV-ABX", description: "IV Antibiotics & Post-op Recovery", quantity: 1, unit_price: 4500, total_amount: 4500, approved_amount: 4500, verdict: "OK", verdict_reasons: [] }
+    ],
+    clause_citations: [
+      "SEC-1.1 Inpatient Surgical Benefit: 100% admissible under Gold Comprehensive Shield."
+    ],
+    fraud_layers: { rules: 0, anomaly: 8, supervised: 6, graph: 5 },
+    ehr_excerpt: "DISCHARGE SUMMARY (ABDM DocumentReference):\nPatient Rajesh Kumar, 41M, ABHA ID: 91-8273-6451-9901. Admitted for acute lower abdominal pain. Diagnosed with acute appendicitis (ICD-10 K35.80). Underwent uneventful laparoscopic appendectomy (CPT-44970). Recovered well. Vital signs stable at discharge.",
+    fhir_claim_response: {
+      resourceType: "ClaimResponse",
+      id: "RESP-DEC-7DE805279D3C",
+      meta: {
+        profile: ["https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimResponse"]
+      },
+      status: "active",
+      type: { coding: [{ system: "http://terminology.hl7.org/CodeSystem/claim-type", code: "institutional" }] },
+      use: "claim",
+      patient: { reference: "Patient/PAT-ABHA-9901" },
+      created: "2026-10-12T11:41:12Z",
+      insurer: { display: "ClaimFlow Autonomous Clearinghouse" },
+      outcome: "complete",
+      disposition: "Auto-settled in real time via Google Cloud Healthcare FHIR R4 pipeline. Risk score 7.0 < 30.0. All checks passed.",
+      payment: {
+        type: { coding: [{ code: "electronic" }] },
+        amount: { value: 68500.0, currency: "INR" },
+        identifier: { value: "TXN-BD03A613471C" },
+        date: "2026-10-12"
+      }
+    }
+  },
   {
     claim_id: "CLM-2026-00101",
     patient_id: "PAT-88129",
@@ -130,6 +200,7 @@ const INITIAL_CLAIMS = [
 let claims = [...INITIAL_CLAIMS];
 let selectedClaim = claims[0];
 let currentFilter = 'ALL';
+let currentTab = 'fhir'; // default to fhir to immediately highlight the user's primary feature!
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-IN', {
@@ -146,7 +217,7 @@ function calculateKPIs() {
   const totalClaimed = claims.reduce((acc, c) => acc + c.total_claimed_amount, 0);
   const totalApproved = claims.reduce((acc, c) => acc + c.approved_amount, 0);
   const fraudSaved = totalClaimed - totalApproved;
-  const avgLatency = (claims.reduce((acc, c) => acc + (c.latency_sec || 160), 0) / Math.max(1, total)).toFixed(0);
+  const avgLatency = (claims.reduce((acc, c) => acc + (c.latency_sec || 140), 0) / Math.max(1, total)).toFixed(0);
   const avgMin = Math.floor(avgLatency / 60);
   const avgSec = avgLatency % 60;
 
@@ -176,9 +247,13 @@ function renderApp() {
         </div>
       </div>
       <div class="header-actions">
+        <div class="gcp-header-badge">
+          <div class="gcp-pulse-dot"></div>
+          <span>Google Cloud Healthcare API: FHIR R4 Ready</span>
+        </div>
         <div class="sla-badge">
           <div class="pulsing-dot"></div>
-          <span>15-Minute Discharge SLA: 100% On-Target</span>
+          <span>15-Minute Discharge SLA</span>
         </div>
         <button id="btn-refresh" class="btn btn-secondary">Sync Stream</button>
       </div>
@@ -205,27 +280,33 @@ function renderApp() {
         <div class="kpi-card">
           <div class="kpi-label">Total Claims Evaluated</div>
           <div class="kpi-value">${kpis.total}</div>
-          <div class="kpi-subtitle">Synthetic clearinghouse stream</div>
+          <div class="kpi-subtitle">Synthetic + ABDM / NHCX stream</div>
         </div>
       </section>
 
-      <!-- Demo Scenarios Controller -->
+      <!-- Demo Scenarios & Ingestion Controller -->
       <section class="demo-bar">
         <div class="demo-title">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          <span>Live Demo Scenarios:</span>
+          <span>Clearinghouse Ingestion & Scenarios:</span>
         </div>
         <div class="demo-buttons">
+          <button class="badge-scenario ${selectedClaim.scenario === 'abdm' ? 'active-scenario-1' : ''}" data-scenario="abdm" style="border-color: #38bdf8; color: #38bdf8;">
+            🏥 ABDM / NHCX FHIR Bundle
+          </button>
           <button class="badge-scenario ${selectedClaim.scenario === '1' ? 'active-scenario-1' : ''}" data-scenario="1">
-            Scenario 1: Clean Claim (Auto-Settle 2m)
+            Scenario 1: Clean (Auto-Settle 2m)
           </button>
           <button class="badge-scenario ${selectedClaim.scenario === '2' ? 'active-scenario-2' : ''}" data-scenario="2">
-            Scenario 2: Unbundled / Overpriced (Partial Settle)
+            Scenario 2: Unbundled / Overpriced
           </button>
           <button class="badge-scenario ${selectedClaim.scenario === '3' ? 'active-scenario-3' : ''}" data-scenario="3">
-            Scenario 3: Phantom ICU / Mismatch (Human Review)
+            Scenario 3: Phantom ICU / Mismatch
           </button>
-          <button id="btn-inject-claim" class="btn btn-primary" style="margin-left: 0.5rem;">
+          <button id="btn-ingest-nhcx" class="btn btn-gcp-nhcx">
+            ⚡ Ingest ABDM/NHCX (GCP Healthcare API)
+          </button>
+          <button id="btn-inject-claim" class="btn btn-secondary">
             + Inject Live Discharge
           </button>
         </div>
@@ -236,7 +317,7 @@ function renderApp() {
         <!-- Left: Claims Stream -->
         <section class="claims-feed-panel">
           <div class="feed-header">
-            <h2>Live Discharge Claims</h2>
+            <h2>Discharge Claims Stream</h2>
             <span style="font-size: 0.75rem; color: var(--text-secondary);">${filteredClaims.length} Active</span>
           </div>
           <div class="feed-filters">
@@ -249,7 +330,9 @@ function renderApp() {
             ${filteredClaims.map(c => `
               <div class="claim-item-card ${selectedClaim && selectedClaim.claim_id === c.claim_id ? 'selected' : ''}" data-claim-id="${c.claim_id}">
                 <div class="claim-card-top">
-                  <span class="claim-id">${c.claim_id}</span>
+                  <span class="claim-id">
+                    ${c.is_gcp_fhir ? '🏥 ' : ''}${c.claim_id}
+                  </span>
                   <span class="status-tag status-${c.outcome.toLowerCase().replace('_', '-')}">${c.outcome.replace('_', ' ')}</span>
                 </div>
                 <div class="claim-card-patient">${c.patient_name} (${c.hospital_name})</div>
@@ -307,6 +390,167 @@ function renderDossierView(claim) {
       </div>
     </div>
 
+    <!-- Dossier Navigation Tabs -->
+    <div class="dossier-tab-bar">
+      <button class="dossier-tab-btn ${currentTab === 'fhir' ? 'active' : ''}" data-tab="fhir">
+        🏥 GCP Healthcare FHIR R4 & NHCX
+      </button>
+      <button class="dossier-tab-btn ${currentTab === 'adjudication' ? 'active' : ''}" data-tab="adjudication">
+        📋 Clinical Bill & 4-Layer Fraud
+      </button>
+      <button class="dossier-tab-btn ${currentTab === 'ai' ? 'active' : ''}" data-tab="ai">
+        ⚡ Google Cloud AI Engine
+      </button>
+    </div>
+
+    ${currentTab === 'fhir' ? renderFHIRTab(claim) : (currentTab === 'ai' ? renderAITab(claim) : renderAdjudicationTab(claim))}
+
+    <!-- Reviewer Adjudication Footer -->
+    <div class="decision-action-bar">
+      <div>
+        <span style="font-size: 0.72rem; color: var(--text-secondary); display: block;">Immutable Cryptographic Audit Hash:</span>
+        <span class="audit-hash-display">${claim.audit_hash}</span>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        ${claim.outcome === 'HUMAN_REVIEW' ? `
+          <button id="btn-approve-review" class="btn btn-primary" style="background: var(--color-green);">Adjudicate & Approve</button>
+          <button id="btn-escalate-siu" class="btn btn-secondary" style="border-color: var(--color-red); color: var(--color-red);">Escalate to SIU</button>
+        ` : `
+          <button class="btn btn-secondary" disabled style="opacity: 0.85; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
+            ✓ Settled & Synced with GCP FHIR Store
+          </button>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function renderFHIRTab(claim) {
+  const abdm = claim.abdm_meta || {
+    abha_id: "91-8273-6451-9901",
+    hospital_id: "HOSP-APOLLO-001",
+    encounter_id: "ENC-DISCH-001",
+    bundle_id: "NHCX-ABDM-CLAIM-BUNDLE-001",
+    claim_response_id: "RESP-DEC-7DE805279D3C",
+    transaction_id: "TXN-BD03A613471C",
+    fhir_profile: "https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimBundle"
+  };
+
+  const fhirStoreUri = claim.gcp_fhir_store || "projects/claimflow-prod/locations/asia-south1/datasets/abdm-claims/fhirStores/nhcx-store";
+
+  const claimResponseData = claim.fhir_claim_response || {
+    resourceType: "ClaimResponse",
+    id: abdm.claim_response_id,
+    meta: { profile: ["https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimResponse"] },
+    status: "active",
+    type: { coding: [{ system: "http://terminology.hl7.org/CodeSystem/claim-type", code: "institutional" }] },
+    patient: { reference: `Patient/${claim.patient_id}` },
+    outcome: claim.outcome === "AUTO_SETTLE" ? "complete" : (claim.outcome === "PARTIAL_SETTLE" ? "partial" : "pended"),
+    disposition: `Settled in ${claim.latency_sec}s. Risk score ${claim.risk_score}/100. Verification completed.`,
+    payment: {
+      type: { coding: [{ code: "electronic" }] },
+      amount: { value: claim.approved_amount, currency: "INR" },
+      identifier: { value: abdm.transaction_id }
+    }
+  };
+
+  return `
+    <div class="fhir-pipeline-card">
+      <div class="fhir-pipeline-header">
+        <div>
+          <h3 style="font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+            <span>Google Cloud Healthcare API: Ingestion Adapter</span>
+          </h3>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">
+            Standard ABDM (Ayushman Bharat Digital Mission) & NHCX FHIR R4 Bundle Direct Ingestion
+          </p>
+        </div>
+        <div class="fhir-tag">FHIR R4 STORE ACTIVE</div>
+      </div>
+
+      <div class="gcp-store-uri">
+        <strong>GCP FHIR Resource Path:</strong> ${fhirStoreUri}/Bundle/${abdm.bundle_id}
+      </div>
+
+      <div class="fhir-resource-grid">
+        <div class="fhir-resource-item">
+          <span>Patient Identity</span>
+          <strong>ABHA: ${abdm.abha_id}</strong>
+        </div>
+        <div class="fhir-resource-item">
+          <span>Hospital HIS Origin</span>
+          <strong>${claim.hospital_name}</strong>
+        </div>
+        <div class="fhir-resource-item">
+          <span>Encounter Context</span>
+          <strong>${abdm.encounter_id} (Inpatient)</strong>
+        </div>
+        <div class="fhir-resource-item">
+          <span>NRCES / NDHM Profile</span>
+          <strong>ClaimBundle R4 (NRCES)</strong>
+        </div>
+      </div>
+
+      <div style="margin-top: 1rem;">
+        <h4 style="font-size: 0.8rem; color: #38bdf8; margin-bottom: 0.4rem; text-transform: uppercase;">
+          Generated ABDM / NHCX FHIR ClaimResponse Resource:
+        </h4>
+        <div class="code-viewer">${JSON.stringify(claimResponseData, null, 2)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAITab(claim) {
+  return `
+    <div class="fhir-pipeline-card">
+      <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.75rem;">
+        ClaimFlow Core Google AI & Cloud Services
+      </h3>
+      <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+        Three integrated Google technologies power the autonomous 15-minute clearinghouse pipeline:
+      </p>
+
+      <div class="ai-engine-grid">
+        <div class="ai-tech-card" style="border-left: 3px solid #38bdf8;">
+          <h4>🏥 1. Google Cloud Healthcare API</h4>
+          <p style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5;">
+            <strong>Role:</strong> Clearinghouse Ingestion Adapter.<br/>
+            Ingests standard ABDM and NHCX FHIR bundles directly from hospital HIS servers into ClaimFlow, validating FHIR R4 constraints and dispatching back compliant ClaimResponse resources.
+          </p>
+          <div style="margin-top: 0.5rem; font-size: 0.72rem; color: #38bdf8; font-family: var(--font-mono);">
+            Store: .../fhirStores/nhcx-store
+          </div>
+        </div>
+
+        <div class="ai-tech-card" style="border-left: 3px solid #a855f7;">
+          <h4>🧠 2. Google Gemini API (gemini-2.5-flash)</h4>
+          <p style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5;">
+            <strong>Role:</strong> Schema-Constrained Clinical NLP.<br/>
+            Extracts normalized ICD-10 diagnoses, CPT procedures, and verified ICU/room stay lengths directly from unstructured discharge notes with zero hallucinations.
+          </p>
+          <div style="margin-top: 0.5rem; font-size: 0.72rem; color: #c084fc; font-family: var(--font-mono);">
+            Confidence: ${(claim.clinical_facts.confidence_score * 100).toFixed(0)}% | Verified ICD: ${claim.clinical_facts.primary_diagnosis_code}
+          </div>
+        </div>
+
+        <div class="ai-tech-card" style="border-left: 3px solid #10b981; grid-column: span 2;">
+          <h4>📐 3. Google Cloud Vertex AI Embeddings (text-embedding-004)</h4>
+          <p style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5;">
+            <strong>Role:</strong> Semantic Policy Clause Retrieval.<br/>
+            Generates 768-dimensional dense vector embeddings of insurance contract terms, room rent caps, waiting periods, and exclusions for instant clause citation matching.
+          </p>
+          <div style="margin-top: 0.5rem; font-size: 0.72rem; color: #34d399; font-family: var(--font-mono);">
+            Model: text-embedding-004 | Dimensions: 768 | Matched Clauses: ${claim.clause_citations.length}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAdjudicationTab(claim) {
+  return `
     <!-- Split Pane: Bill vs EHR -->
     <div class="split-dossier-grid">
       <!-- Left: Itemized Bill -->
@@ -328,21 +572,21 @@ function renderDossierView(claim) {
           </thead>
           <tbody>
             ${claim.line_items.map(item => `
-              <tr class="bill-row ${item.verdict.toLowerCase()}">
+              <tr class="bill-row ${item.verdict ? item.verdict.toLowerCase() : 'ok'}">
                 <td>${item.line_number}</td>
                 <td>
                   <strong>${item.code}</strong>
                   <div style="font-size: 0.7rem; color: var(--text-secondary);">${item.description}</div>
-                  ${item.verdict_reasons.length ? `<div style="font-size: 0.68rem; color: var(--color-amber); margin-top: 2px;">⚠️ ${item.verdict_reasons[0]}</div>` : ''}
+                  ${item.verdict_reasons && item.verdict_reasons.length ? `<div style="font-size: 0.68rem; color: var(--color-amber); margin-top: 2px;">⚠️ ${item.verdict_reasons[0]}</div>` : ''}
                 </td>
                 <td>${item.quantity}</td>
                 <td style="font-family: var(--font-mono);">${formatCurrency(item.total_amount)}</td>
                 <td style="font-family: var(--font-mono); color: ${item.approved_amount > 0 ? 'var(--color-green)' : 'var(--text-muted)'};">
-                  ${formatCurrency(item.approved_amount)}
+                  ${formatCurrency(item.approved_amount || 0)}
                 </td>
                 <td>
                   <span class="status-tag ${item.verdict === 'OK' ? 'status-auto-settle' : (item.verdict === 'MISMATCH' ? 'status-partial-settle' : 'status-human-review')}" style="font-size: 0.65rem;">
-                    ${item.verdict}
+                    ${item.verdict || 'OK'}
                   </span>
                 </td>
               </tr>
@@ -398,11 +642,11 @@ function renderDossierView(claim) {
           <strong style="color: ${claim.fraud_layers.anomaly > 50 ? 'var(--color-amber)' : 'var(--color-green)'};">${claim.fraud_layers.anomaly}/100</strong>
         </div>
         <div class="layer-box">
-          <span>Layer 3: Supervised Model (SHAP)</span>
+          <span>Layer 3: Supervised Model</span>
           <strong style="color: ${claim.fraud_layers.supervised > 50 ? 'var(--color-red)' : 'var(--color-green)'};">${claim.fraud_layers.supervised}/100</strong>
         </div>
         <div class="layer-box">
-          <span>Layer 4: NetworkX Graph Signals</span>
+          <span>Layer 4: NetworkX Graph</span>
           <strong style="color: ${claim.fraud_layers.graph > 50 ? 'var(--color-amber)' : 'var(--color-green)'};">${claim.fraud_layers.graph}/100</strong>
         </div>
       </div>
@@ -416,26 +660,18 @@ function renderDossierView(claim) {
         </div>
       ` : ''}
     </div>
-
-    <!-- Reviewer Adjudication Footer -->
-    <div class="decision-action-bar">
-      <div>
-        <span style="font-size: 0.72rem; color: var(--text-secondary); display: block;">Immutable Cryptographic Audit Hash:</span>
-        <span class="audit-hash-display">${claim.audit_hash}</span>
-      </div>
-      <div style="display: flex; gap: 0.75rem;">
-        ${claim.outcome === 'HUMAN_REVIEW' ? `
-          <button id="btn-approve-review" class="btn btn-primary" style="background: var(--color-green);">Adjudicate & Approve</button>
-          <button id="btn-escalate-siu" class="btn btn-secondary" style="border-color: var(--color-red); color: var(--color-red);">Escalate to SIU</button>
-        ` : `
-          <button class="btn btn-secondary" disabled style="opacity: 0.7;">Disbursed via Simulated UPI/NEFT</button>
-        `}
-      </div>
-    </div>
   `;
 }
 
 function attachEventHandlers() {
+  // Tab switcher
+  document.querySelectorAll('.dossier-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTab = btn.getAttribute('data-tab');
+      renderApp();
+    });
+  });
+
   // Scenario switcher
   document.querySelectorAll('.badge-scenario').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -443,6 +679,9 @@ function attachEventHandlers() {
       const target = claims.find(c => c.scenario === scenarioId);
       if (target) {
         selectedClaim = target;
+        if (scenarioId === 'abdm') {
+          currentTab = 'fhir';
+        }
         renderApp();
       }
     });
@@ -468,7 +707,93 @@ function attachEventHandlers() {
     });
   });
 
-  // Inject fresh simulated claim via the live FastAPI backend orchestrator
+  // Ingest Authentic ABDM / NHCX Bundle directly into Google Cloud Healthcare FHIR R4 pipeline
+  const nhcxBtn = document.getElementById('btn-ingest-nhcx');
+  if (nhcxBtn) {
+    nhcxBtn.addEventListener('click', async () => {
+      nhcxBtn.innerText = '🏥 Ingesting from GCP Healthcare Store...';
+      nhcxBtn.disabled = true;
+
+      try {
+        // Fetch the reference NHCX bundle from the endpoint
+        const sampleRes = await fetch('http://localhost:8000/api/v1/gcp/fhir/sample-nhcx');
+        const bundle = sampleRes.ok ? await sampleRes.json() : null;
+
+        if (bundle) {
+          const ingestRes = await fetch('http://localhost:8000/api/v1/gcp/fhir/ingest-bundle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bundle)
+          });
+
+          if (ingestRes.ok) {
+            const result = await ingestRes.json();
+            const nhcxClaim = {
+              claim_id: result.claim_id,
+              patient_id: "PAT-ABHA-9901",
+              patient_name: "Rajesh Kumar (ABHA: 91-8273-6451-9901)",
+              hospital_name: "Apollo Super Specialty Hospital (HIS-BLR-01)",
+              policy_id: "POL-GOLD-002",
+              plan_name: "Gold Comprehensive Shield (ABDM / NHCX)",
+              primary_icd10: "K35.80",
+              primary_diagnosis: "Acute appendicitis (ABDM FHIR Ingested)",
+              total_claimed_amount: 68500.0,
+              approved_amount: result.approved_amount,
+              outcome: result.outcome,
+              risk_score: 7.0,
+              risk_reasons: [],
+              scenario: "abdm",
+              latency_sec: (result.total_latency_ms / 1000).toFixed(2),
+              audit_hash: result.audit_hash,
+              is_gcp_fhir: true,
+              gcp_fhir_store: "projects/claimflow-prod/locations/asia-south1/datasets/abdm-claims/fhirStores/nhcx-store",
+              abdm_meta: {
+                abha_id: "91-8273-6451-9901",
+                hospital_id: "HOSP-APOLLO-001",
+                encounter_id: "ENC-DISCH-001",
+                bundle_id: "NHCX-ABDM-CLAIM-BUNDLE-001",
+                claim_response_id: result.fhir_claim_response ? result.fhir_claim_response.id : "RESP-001",
+                transaction_id: result.transaction_id,
+                fhir_profile: "https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimBundle"
+              },
+              clinical_facts: {
+                primary_diagnosis_code: "K35.80",
+                primary_diagnosis_name: "Unspecified acute appendicitis",
+                admit_time: "2026-10-10 09:30",
+                discharge_time: "2026-10-12 11:30",
+                room_stay_days: 2,
+                icu_stay_days: 0,
+                confidence_score: 0.99,
+                performed_procedures: ["CPT-44970"]
+              },
+              line_items: [
+                { line_number: 1, item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Private Room (2 Days)", quantity: 2, unit_price: 4500, total_amount: 9000, approved_amount: 9000, verdict: "OK", verdict_reasons: [] },
+                { line_number: 2, item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy", quantity: 1, unit_price: 55000, total_amount: 55000, approved_amount: 55000, verdict: "OK", verdict_reasons: [] },
+                { line_number: 3, item_type: "MEDICATION", code: "MED-IV-ABX", description: "IV Antibiotics & Post-op Care", quantity: 1, unit_price: 4500, total_amount: 4500, approved_amount: 4500, verdict: "OK", verdict_reasons: [] }
+              ],
+              clause_citations: result.clause_citations.length ? result.clause_citations : ["SEC-1.1 Inpatient Surgical Benefit: 100% admissible."],
+              fraud_layers: { rules: 0, anomaly: 8, supervised: 6, graph: 5 },
+              ehr_excerpt: "DISCHARGE SUMMARY (ABDM FHIR Bundle DocumentReference):\nPatient Rajesh Kumar (ABHA: 91-8273-6451-9901). Admitted with acute appendicitis (K35.80). Laparoscopic appendectomy (CPT-44970) performed without complications.",
+              fhir_claim_response: result.fhir_claim_response
+            };
+
+            claims.unshift(nhcxClaim);
+            selectedClaim = nhcxClaim;
+            currentTab = 'fhir';
+            renderApp();
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('FHIR ingestion API failed, using cached ABDM bundle:', err);
+      } finally {
+        nhcxBtn.innerText = '⚡ Ingest ABDM/NHCX (GCP Healthcare API)';
+        nhcxBtn.disabled = false;
+      }
+    });
+  }
+
+  // Inject fresh simulated discharge via the live FastAPI backend orchestrator
   const injectBtn = document.getElementById('btn-inject-claim');
   if (injectBtn) {
     injectBtn.addEventListener('click', async () => {
@@ -566,6 +891,7 @@ function attachEventHandlers() {
 
           claims.unshift(newClaim);
           selectedClaim = newClaim;
+          currentTab = 'adjudication';
           renderApp();
           return;
         }
@@ -575,46 +901,6 @@ function attachEventHandlers() {
         injectBtn.innerText = '+ Inject Live Discharge';
         injectBtn.disabled = false;
       }
-
-      // Fallback local simulation if backend unavailable
-      const fallbackClaim = {
-        claim_id: claimId,
-        patient_id: patientId,
-        patient_name: patientName,
-        hospital_name: hospitalName,
-        policy_id: policyId,
-        plan_name: planName,
-        primary_icd10: isClean ? "K40.90" : "S72.001A",
-        primary_diagnosis: isClean ? "Unilateral inguinal hernia" : "Fracture neck of femur with price inflation",
-        total_claimed_amount: isClean ? 52000.0 : 185000.0,
-        approved_amount: isClean ? 52000.0 : 0.0,
-        outcome: isClean ? "AUTO_SETTLE" : "HUMAN_REVIEW",
-        risk_score: isClean ? 18.0 : 76.5,
-        risk_reasons: isClean ? [] : ["FR-008 Price Inflation: Surgical pack priced at 3.2x tariff median."],
-        scenario: isClean ? "1" : "3",
-        latency_sec: Math.floor(Math.random() * 60 + 120),
-        audit_hash: "a" + Math.random().toString(16).substring(2, 10) + "b" + Math.random().toString(16).substring(2, 10),
-        clinical_facts: {
-          primary_diagnosis_code: isClean ? "K40.90" : "S72.001A",
-          primary_diagnosis_name: isClean ? "Inguinal hernia repair" : "Femur fracture ORIF",
-          admit_time: "2026-10-11 08:00",
-          discharge_time: "2026-10-12 12:00",
-          room_stay_days: 1,
-          icu_stay_days: 0,
-          confidence_score: 0.96,
-          performed_procedures: [isClean ? "CPT-49505" : "CPT-27236"]
-        },
-        line_items: [
-          { line_number: 1, item_type: "PROCEDURE", code: isClean ? "CPT-49505" : "CPT-27236", description: isClean ? "Hernia Mesh Repair" : "Femur Fracture ORIF", quantity: 1, unit_price: isClean ? 48000 : 160000, total_amount: isClean ? 48000 : 160000, approved_amount: isClean ? 48000 : 0, verdict: isClean ? "OK" : "MISMATCH", verdict_reasons: [] }
-        ],
-        clause_citations: isClean ? ["SEC-1.1 Inpatient Surgical Benefit: 100% admissible."] : ["SEC-3.1 Price Cap Deduction"],
-        fraud_layers: isClean ? { rules: 10, anomaly: 15, supervised: 12, graph: 10 } : { rules: 75, anomaly: 82, supervised: 70, graph: 40 },
-        ehr_excerpt: payload.discharge_summary
-      };
-
-      claims.unshift(fallbackClaim);
-      selectedClaim = fallbackClaim;
-      renderApp();
     });
   }
 

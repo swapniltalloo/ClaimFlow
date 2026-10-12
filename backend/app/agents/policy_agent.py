@@ -2,6 +2,7 @@ import json
 import os
 from typing import List, Dict, Any, Tuple, Optional
 from app.models.domain import Claim, LineItem, LineItemType, LineItemVerdict, PolicyCoverage
+from app.services.gcp_embeddings import GCPEmbeddingsService
 from app.core.logging import logger
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -11,14 +12,14 @@ POLICIES_DIR = os.path.join(BASE_DIR, "data", "policies")
 class PolicyAgent:
     """Agent C: Policy Agent (RAG & Deterministic Payable Calculator).
     
-    Evaluates billed line items against policy clauses, limits, room caps, waiting periods,
-    and exclusions. Computes exact payable amounts deterministically, ensuring EVERY deduction
-    carries an explicit, verifiable clause citation.
+    Evaluates billed line items against policy clauses using Google Cloud Vertex AI
+    Embeddings (text-embedding-004), limits, room caps, waiting periods, and exclusions.
     """
 
     def __init__(self, policies_dir: Optional[str] = None):
         self.policies_dir = policies_dir or POLICIES_DIR
         self.policies: Dict[str, Dict[str, Any]] = self._load_policies()
+        self.embeddings = GCPEmbeddingsService()
 
     def _load_policies(self) -> Dict[str, Dict[str, Any]]:
         loaded = {}

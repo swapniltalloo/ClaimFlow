@@ -98,19 +98,21 @@ Hospital EHR/HIS ──► Ingestion API (FHIR/HL7 adapter)
 
 | Layer | Choice | Why |
 |---|---|---|
-| Backend | Python 3.11, FastAPI, Pydantic v2 | Async API; strict schema validation of agent outputs |
-| Orchestration | LangGraph | Explicit state machine, parallel nodes, retries, timeouts, human-review fallback |
-| LLM | Claude via API (structured output / tool use) | EHR extraction, summary parsing, explanations |
-| Database | PostgreSQL + pgvector | Claims, audit log, policy embeddings in one store |
-| Queue / cache | Redis Streams | Discharge event bus, embedding cache (Kafka as production upgrade) |
-| Rules engine | Plain Python rule classes (or `durable-rules`) | Deterministic, testable, auditable |
-| Fraud ML | scikit-learn, SHAP, networkx | Anomaly detection, classification, explainability, graph analysis |
-| Data standards | FHIR R4 (ABDM / NHCX for India) | Credible EHR integration |
+| Ingestion Adapter | **Google Cloud Healthcare API (FHIR R4 Store)** | Direct ingestion of authentic ABDM & NHCX FHIR R4 bundles from hospital HIS servers |
+| Clinical NLP LLM | **Google Gemini API (`gemini-2.5-flash` via `google-genai`)** | Schema-constrained clinical extraction of ICD-10 codes, CPT procedures, and stays |
+| Clause Retrieval Embeddings | **Google Cloud Vertex AI Embeddings (`text-embedding-004`)** | 768-dimensional dense vector semantic matching for policy coverage & exclusion clauses |
+| Backend | Python 3.11/3.13, FastAPI, Pydantic v2 | Async API; strict schema validation of agent outputs |
+| Orchestration | LangGraph / ClaimFlow Pipeline | Explicit state machine, parallel nodes, retries, timeouts, human-review fallback |
+| Database | PostgreSQL + pgvector / SQLite memory | Claims, audit log, policy embeddings in one store |
+| Queue / cache | Redis Streams / In-memory queue | Discharge event bus, embedding cache (Kafka as production upgrade) |
+| Rules engine | Plain Python rule classes (`CR-001` to `CR-006`) | Deterministic, testable, auditable |
+| Fraud ML | scikit-learn, SHAP, networkx | 4 layers: rules, isolation forest, gradient boosting, graph signals |
+| Data standards | FHIR R4 (ABDM / NHCX for India NRCES) | Credible National Health Claims Exchange EHR integration |
 | Reference data | ICD-10, procedure codes, tariff tables | Code validation and price benchmarking |
-| Frontend | React + Vite + Tailwind, WebSocket/SSE | Live claims board and dashboards |
+| Frontend | Vite + Vanilla CSS, Dashboard UI | Live claims board, ABDM / NHCX FHIR R4 inspection |
 | Payments | Mock gateway (simulated UPI/NEFT), idempotency keys | Safe settlement simulation |
 | Infra | Docker Compose, GitHub Actions | One-command setup, CI |
-| Testing | pytest, Locust or `scripts/benchmark.py`, Antigravity browser agent | Unit, load, UI regression |
+| Testing | pytest, full unit & integration suite (34 tests) | Unit, load, UI regression |
 
 ---
 

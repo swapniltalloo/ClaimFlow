@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Tuple
 from dateutil import parser as dt_parser
 from app.models.domain import ClinicalFacts
+from app.services.gemini_service import GeminiService
 from app.core.logging import logger
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -16,8 +17,7 @@ class EHRParserAgent:
     """Agent A: EHR Parser Agent.
     
     Parses unstructured hospital discharge summaries and FHIR bundles into schema-validated
-    ClinicalFacts with verifiable ICD-10 lookups, per-field confidence scoring, and auditable
-    evidence citations.
+    ClinicalFacts using Google Gemini 2.5 Flash and verified ICD-10 lookups.
     """
 
     def __init__(self, icd10_path: Optional[str] = None, tariffs_path: Optional[str] = None):
@@ -25,6 +25,7 @@ class EHRParserAgent:
         self.tariffs_path = tariffs_path or TARIFFS_PATH
         self.icd10_catalog = self._load_json(self.icd10_path)
         self.tariffs_catalog = self._load_json(self.tariffs_path)
+        self.gemini = GeminiService()
 
         # Precompute lookup maps
         self.code_to_diag = {d["code"]: d for d in self.icd10_catalog}
@@ -43,6 +44,12 @@ class EHRParserAgent:
         fhir_bundle: Optional[Dict[str, Any]] = None
     ) -> ClinicalFacts:
         """Parses clinical narrative into structured ClinicalFacts with schema validation."""
+        # Check if Google Gemini API is available for structured extraction
+        if self.gemini.is_available():
+            gemini_facts = self.gemini.parse_clinical_summary(discharge_text, patient_id or "PAT-UNKNOWN")
+            if gemini_facts:
+                return gemini_facts
+
         evidence_snippets: Dict[str, str] = {}
         field_confidences: Dict[str, float] = {}
         flagged_uncertainties: List[str] = []

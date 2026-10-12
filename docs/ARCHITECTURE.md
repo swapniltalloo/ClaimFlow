@@ -45,3 +45,50 @@ Hospital EHR/HIS ──► Ingestion API (FHIR/HL7 adapter)
 | **Total Pipeline Execution** | **~3 minutes** | **~5.5 minutes** |
 
 *Remaining 9.5 to 12 minutes reserved for queue buffering, retry backoff, and human-in-the-loop review.*
+
+## 4. Google Cloud AI & Healthcare API Integrations
+
+ClaimFlow integrates three core Google Cloud services designed specifically for enterprise health clearinghouses:
+
+```
+Hospital HIS Server
+        │ (FHIR R4 Bundle)
+        ▼
+[1. Google Cloud Healthcare API] ──► Asia-South1 FHIR R4 Store (projects/.../fhirStores/nhcx-store)
+        │                             │
+        │ Ingestion Adapter           ▼
+        │ (ABDM & NHCX Profiles)  Discharge Narrative
+        │                             │
+        ▼                             ▼
+ClaimFlow Orchestrator ◄─── [2. Google Gemini API: gemini-2.5-flash]
+        │                   (Schema-constrained ClinicalFacts extraction)
+        │
+        ├──► Coding Validator (CR-001 to CR-006)
+        │
+        ├──► [3. Google Cloud Vertex AI Embeddings: text-embedding-004]
+        │    (768-dim dense vector embeddings for policy clause RAG)
+        │
+        ├──► Layered Fraud Agent (Rules, Isolation Forest, XGBoost, Graph)
+        │
+        ▼
+Settlement Agent ──► Dispatches compliant NRCES FHIR ClaimResponse Resource back to HIS
+```
+
+### 1. Google Cloud Healthcare API (FHIR R4 Store) - Main Ingestion Adapter
+- **Role:** Directly connects to hospital Hospital Information System (HIS) endpoints to ingest authentic ABDM (Ayushman Bharat Digital Mission) and NHCX (National Health Claims Exchange) FHIR R4 bundles.
+- **Profiles Handled:** NRCES / NDHM ClaimBundle R4 (`https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimBundle`), including `Patient` (ABHA ID), `Encounter`, `Condition`, `Procedure`, `Claim`, and `DocumentReference`.
+- **Response Generation:** Generates authentic NDHM FHIR `ClaimResponse` (`https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimResponse`) containing payment transaction identifiers and line-item adjudications.
+- **Implementation:** `backend/app/adapters/gcp_healthcare.py` and `backend/app/api/endpoints/gcp_fhir_ingest.py`.
+
+### 2. Google Gemini API (`gemini-2.5-flash` via `google-genai`)
+- **Role:** High-speed, schema-constrained clinical NLP extraction.
+- **Model:** `gemini-2.5-flash` with Pydantic structured output.
+- **Function:** Parses unstructured physician discharge notes, operative reports, and lab narratives into verified ICD-10 diagnostic codes, CPT procedure codes, and admission lengths.
+- **Implementation:** `backend/app/services/gemini_service.py` wired into `backend/app/agents/ehr_parser.py`.
+
+### 3. Google Cloud Vertex AI Embeddings (`text-embedding-004`)
+- **Role:** Semantic policy clause and exclusion retrieval.
+- **Model:** `text-embedding-004` (768-dimensional dense vector embeddings).
+- **Function:** Encodes health insurance policy clauses (room rent caps, waiting periods, sub-limits, exclusions) to match billed procedures and line items deterministically.
+- **Implementation:** `backend/app/services/gcp_embeddings.py` wired into `backend/app/agents/policy_agent.py`.
+
