@@ -3,6 +3,7 @@ import json
 from typing import Optional, Dict, Any
 from app.models.domain import ClinicalFacts, Claim, Decision
 from app.core.logging import logger
+from app.core.config import settings
 
 GEMINI_MODEL = "gemini-2.5-flash"
 
@@ -15,7 +16,13 @@ class GeminiService:
     """
 
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
+        self.api_key = (
+            api_key
+            or os.environ.get("GEMINI_API_KEY")
+            or os.environ.get("GOOGLE_API_KEY")
+            or settings.GEMINI_API_KEY
+            or settings.GOOGLE_API_KEY
+        )
         self.client = None
         if self.api_key:
             try:

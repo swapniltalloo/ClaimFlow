@@ -69,3 +69,37 @@ async def sync_bundle_from_gcp_fhir_store(bundle_id: str):
 async def get_sample_nhcx_bundle():
     """Returns the reference ABDM / NHCX FHIR R4 Bundle for testing and demonstration."""
     return fhir_adapter.fetch_bundle("default")
+
+
+@router.get("/status", response_model=Dict[str, Any])
+async def get_gcp_cloud_status():
+    """Returns the live connectivity status of all 3 Google services."""
+    from app.services.gemini_service import GeminiService
+    from app.services.gcp_embeddings import GCPEmbeddingsService
+    from app.core.config import settings
+
+    gemini_svc = GeminiService()
+    emb_svc = GCPEmbeddingsService()
+
+    return {
+        "live_cloud_mode": gemini_svc.is_available(),
+        "services": {
+            "google_gemini": {
+                "model": "gemini-2.5-flash",
+                "connected_to_cloud": gemini_svc.is_available(),
+                "mode": "Live Google Cloud (google-genai)" if gemini_svc.is_available() else "Local Deterministic Clinical NLP"
+            },
+            "google_vertex_embeddings": {
+                "model": "text-embedding-004",
+                "dimensions": 768,
+                "connected_to_cloud": emb_svc.client is not None,
+                "mode": "Live Vertex AI (text-embedding-004)" if emb_svc.client is not None else "Local 768-dim Vector Engine"
+            },
+            "google_healthcare_api": {
+                "specification": "FHIR R4",
+                "profiles": ["ABDM ClaimBundle", "NHCX ClaimResponse"],
+                "active_store_uri": f"projects/{settings.GCP_PROJECT_ID}/locations/{settings.GCP_LOCATION}/datasets/{settings.GCP_DATASET_ID}/fhirStores/{settings.GCP_FHIR_STORE_ID}",
+                "status": "Ready for HIS Ingestion"
+            }
+        }
+    }

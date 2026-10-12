@@ -32,8 +32,17 @@ class Settings(BaseSettings):
     HUMAN_REVIEW_RISK_THRESHOLD: float = 60.0
     SIU_ESCALATE_RISK_THRESHOLD: float = 85.0
 
+    # Google Cloud & AI Settings
+    GEMINI_API_KEY: str | None = None
+    GOOGLE_API_KEY: str | None = None
+    GCP_PROJECT_ID: str = "claimflow-prod"
+    GCP_LOCATION: str = "asia-south1"
+    GCP_DATASET_ID: str = "abdm-claims"
+    GCP_FHIR_STORE_ID: str = "nhcx-store"
+    GOOGLE_APPLICATION_CREDENTIALS: str | None = None
+
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(".env", "backend/.env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )

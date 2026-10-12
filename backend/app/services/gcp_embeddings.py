@@ -2,6 +2,7 @@ import os
 import numpy as np
 from typing import List, Optional
 from app.core.logging import logger
+from app.core.config import settings
 
 EMBEDDING_MODEL = "text-embedding-004"
 
@@ -14,7 +15,13 @@ class GCPEmbeddingsService:
     """
 
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
+        self.api_key = (
+            api_key
+            or os.environ.get("GEMINI_API_KEY")
+            or os.environ.get("GOOGLE_API_KEY")
+            or settings.GEMINI_API_KEY
+            or settings.GOOGLE_API_KEY
+        )
         self.client = None
         if self.api_key:
             try:
