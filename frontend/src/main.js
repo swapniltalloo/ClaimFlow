@@ -1,231 +1,35 @@
 import './style.css';
 
-// Initial preloaded claims matching the 3 primary demo scenarios + ABDM/NHCX GCP scenario
-const INITIAL_CLAIMS = [
-  {
-    claim_id: "NHCX-2026-99120",
-    patient_id: "PAT-ABHA-9901",
-    patient_name: "Rajesh Kumar (ABHA: 91-8273-6451-9901)",
-    hospital_name: "Apollo Super Specialty Hospital (HIS-BLR-01)",
-    policy_id: "POL-HDFC-OPTIMA-002",
-    plan_name: "HDFC ERGO Optima Secure (ABDM / NHCX)",
-    primary_icd10: "K35.80",
-    primary_diagnosis: "Acute appendicitis (ABDM FHIR R4 Bundle)",
-    total_claimed_amount: 68500.0,
-    approved_amount: 68500.0,
-    outcome: "AUTO_SETTLE",
-    risk_score: 7.0,
-    risk_reasons: [],
-    scenario: "abdm",
-    latency_sec: 14.5,
-    audit_hash: "0805deab629f0ea31b86218332ef83f2f8deec86dc26bc1a787c9cac7b995288",
-    is_gcp_fhir: true,
-    gcp_fhir_store: "projects/claimflow-prod/locations/asia-south1/datasets/abdm-claims/fhirStores/nhcx-store",
-    abdm_meta: {
-      abha_id: "91-8273-6451-9901",
-      hospital_id: "HOSP-APOLLO-001",
-      encounter_id: "ENC-DISCH-001",
-      bundle_id: "NHCX-ABDM-CLAIM-BUNDLE-001",
-      claim_response_id: "RESP-DEC-7DE805279D3C",
-      transaction_id: "TXN-BD03A613471C",
-      fhir_profile: "https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimBundle"
-    },
-    clinical_facts: {
-      primary_diagnosis_code: "K35.80",
-      primary_diagnosis_name: "Unspecified acute appendicitis",
-      admit_time: "2026-10-10 09:30",
-      discharge_time: "2026-10-12 11:30",
-      room_stay_days: 2,
-      icu_stay_days: 0,
-      confidence_score: 0.99,
-      performed_procedures: ["CPT-44970"]
-    },
-    line_items: [
-      { line_number: 1, item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Private AC Room (2 Days)", quantity: 2, unit_price: 4500, total_amount: 9000, approved_amount: 9000, verdict: "OK", verdict_reasons: [] },
-      { line_number: 2, item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy", quantity: 1, unit_price: 55000, total_amount: 55000, approved_amount: 55000, verdict: "OK", verdict_reasons: [] },
-      { line_number: 3, item_type: "MEDICATION", code: "MED-IV-ABX", description: "IV Antibiotics & Post-op Recovery", quantity: 1, unit_price: 4500, total_amount: 4500, approved_amount: 4500, verdict: "OK", verdict_reasons: [] }
-    ],
-    clause_citations: [
-      "SEC-1.1 Inpatient Surgical Benefit: 100% admissible under HDFC ERGO Optima Secure."
-    ],
-    fraud_layers: { rules: 0, anomaly: 8, supervised: 6, graph: 5 },
-    ehr_excerpt: "DISCHARGE SUMMARY (ABDM DocumentReference):\nPatient Rajesh Kumar, 41M, ABHA ID: 91-8273-6451-9901. Admitted for acute lower abdominal pain. Diagnosed with acute appendicitis (ICD-10 K35.80). Underwent uneventful laparoscopic appendectomy (CPT-44970). Recovered well. Vital signs stable at discharge.",
-    fhir_claim_response: {
-      resourceType: "ClaimResponse",
-      id: "RESP-DEC-7DE805279D3C",
-      meta: {
-        profile: ["https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimResponse"]
-      },
-      status: "active",
-      type: { coding: [{ system: "http://terminology.hl7.org/CodeSystem/claim-type", code: "institutional" }] },
-      use: "claim",
-      patient: { reference: "Patient/PAT-ABHA-9901" },
-      created: "2026-10-12T11:41:12Z",
-      insurer: { display: "ClaimFlow Autonomous Clearinghouse" },
-      outcome: "complete",
-      disposition: "Auto-settled in real time via Google Cloud Healthcare FHIR R4 pipeline. Risk score 7.0 < 30.0. All checks passed.",
-      payment: {
-        type: { coding: [{ code: "electronic" }] },
-        amount: { value: 68500.0, currency: "INR" },
-        identifier: { value: "TXN-BD03A613471C" },
-        date: "2026-10-12"
-      }
-    }
-  },
-  {
-    claim_id: "CLM-2026-00101",
-    patient_id: "PAT-88129",
-    patient_name: "Aarav Sharma",
-    hospital_name: "Apollo Super Specialty Hospital",
-    policy_id: "POL-HDFC-OPTIMA-002",
-    plan_name: "HDFC ERGO Optima Secure Policy",
-    primary_icd10: "K35.80",
-    primary_diagnosis: "Unspecified acute appendicitis",
-    total_claimed_amount: 67000.0,
-    approved_amount: 67000.0,
-    outcome: "AUTO_SETTLE",
-    risk_score: 12.5,
-    risk_reasons: [],
-    scenario: "1",
-    latency_sec: 142.5,
-    audit_hash: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
-    clinical_facts: {
-      primary_diagnosis_code: "K35.80",
-      primary_diagnosis_name: "Acute Appendicitis (Uncomplicated)",
-      admit_time: "2026-10-10 10:00",
-      discharge_time: "2026-10-12 14:00",
-      room_stay_days: 2,
-      icu_stay_days: 0,
-      confidence_score: 0.98,
-      performed_procedures: ["CPT-44970"]
-    },
-    line_items: [
-      { line_number: 1, item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Private AC Room", quantity: 2, unit_price: 4500, total_amount: 9000, approved_amount: 9000, verdict: "OK", verdict_reasons: [] },
-      { line_number: 2, item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy (uncomplicated)", quantity: 1, unit_price: 55000, total_amount: 55000, approved_amount: 55000, verdict: "OK", verdict_reasons: [] },
-      { line_number: 3, item_type: "MEDICATION", code: "MED-IV-ABX", description: "IV Antibiotic Therapy (Meropenem)", quantity: 2, unit_price: 1500, total_amount: 3000, approved_amount: 3000, verdict: "OK", verdict_reasons: [] }
-    ],
-    clause_citations: [
-      "SEC-2.1 Single Private AC Room: Full entitlement covered with zero proportionate deduction."
-    ],
-    fraud_layers: { rules: 0, anomaly: 12, supervised: 10, graph: 15 },
-    ehr_excerpt: "Patient presented with acute right lower quadrant abdominal tenderness. Ultrasound confirmed acute appendicitis (K35.80). Successful laparoscopic appendectomy performed (CPT-44970). Afebrile, wound clean."
-  },
-  {
-    claim_id: "CLM-2026-00102",
-    patient_id: "PAT-33291",
-    patient_name: "Priya Patel",
-    hospital_name: "City Metro General Hospital",
-    policy_id: "POL-NIA-YUVA-009",
-    plan_name: "New India Assurance Yuva Bharat (PSU GIPSA)",
-    primary_icd10: "K35.80",
-    primary_diagnosis: "Acute appendicitis with unbundling",
-    total_claimed_amount: 92500.0,
-    approved_amount: 54400.0,
-    outcome: "PARTIAL_SETTLE",
-    risk_score: 48.0,
-    risk_reasons: [
-      "FR-002 Unbundling: Separate peritoneal lavage (CPT-49080) billed with laparoscopic appendectomy package.",
-      "SEC-3.1 Room Rent Cap: Daily room rent billed exceeds INR 3,000/day limit."
-    ],
-    scenario: "2",
-    latency_sec: 184.2,
-    audit_hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    clinical_facts: {
-      primary_diagnosis_code: "K35.80",
-      primary_diagnosis_name: "Acute Appendicitis (Uncomplicated)",
-      admit_time: "2026-10-08 09:30",
-      discharge_time: "2026-10-10 11:30",
-      room_stay_days: 2,
-      icu_stay_days: 0,
-      confidence_score: 0.95,
-      performed_procedures: ["CPT-44970"]
-    },
-    line_items: [
-      { line_number: 1, item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Deluxe Room (Cap: INR 3,000)", quantity: 2, unit_price: 5000, total_amount: 10000, approved_amount: 4800, verdict: "OK", verdict_reasons: ["Excess INR 2,000/day deducted under room cap, 20% copay applied"] },
-      { line_number: 2, item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy", quantity: 1, unit_price: 55000, total_amount: 55000, approved_amount: 44000, verdict: "OK", verdict_reasons: ["Approved less 20% mandatory copay"] },
-      { line_number: 3, item_type: "PROCEDURE", code: "CPT-49080", description: "Peritoneal lavage (Unbundled)", quantity: 1, unit_price: 14500, total_amount: 14500, approved_amount: 0, verdict: "MISMATCH", verdict_reasons: ["Rule CR-003: Unbundling detected. Component integral to primary package CPT-44970."] },
-      { line_number: 4, item_type: "CONSUMABLE", code: "CONS-SURG-KIT", description: "Disposable Trocar Pack", quantity: 1, unit_price: 13000, total_amount: 13000, approved_amount: 5600, verdict: "OK", verdict_reasons: ["Covered less 20% copay"] }
-    ],
-    clause_citations: [
-      "SEC-3.1 Room Rent Capping: Daily room rent billed (INR 5,000) exceeds policy cap of INR 3,000/day. Excess INR 4,000 deducted.",
-      "SEC-4.2 Mandatory Co-Payment: 20% co-payment applied to admissible expenses."
-    ],
-    fraud_layers: { rules: 65, anomaly: 45, supervised: 42, graph: 20 },
-    ehr_excerpt: "Operative Report: Standard laparoscopic appendectomy completed without complication. Minimal serous fluid irrigated and evacuated. Routine surgical steps bundled into main procedure."
-  },
-  {
-    claim_id: "CLM-2026-00103",
-    patient_id: "PAT-19042",
-    patient_name: "Aditya Verma",
-    hospital_name: "Sunrise Community Health Care",
-    policy_id: "POL-STAR-ASSURE-001",
-    plan_name: "Star Health Assure Insurance Policy",
-    primary_icd10: "A97.0",
-    primary_diagnosis: "Dengue fever with Phantom ICU",
-    total_claimed_amount: 142000.0,
-    approved_amount: 0.0,
-    outcome: "HUMAN_REVIEW",
-    risk_score: 82.0,
-    risk_reasons: [
-      "FR-003 Phantom Services: Billed 3 days ICU monitoring with zero clinical record in EHR.",
-      "FR-006 Diagnosis Mismatch: Billed invasive Knee Arthroscopy (CPT-29888) under medical Dengue admission.",
-      "FR-008 Price Inflation: Consumable kit billed at 3.5x regional tariff benchmark."
-    ],
-    scenario: "3",
-    latency_sec: 198.5,
-    audit_hash: "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
-    clinical_facts: {
-      primary_diagnosis_code: "A97.0",
-      primary_diagnosis_name: "Dengue fever without warning signs",
-      admit_time: "2026-10-05 14:00",
-      discharge_time: "2026-10-08 10:00",
-      room_stay_days: 3,
-      icu_stay_days: 0,
-      confidence_score: 0.89,
-      performed_procedures: []
-    },
-    line_items: [
-      { line_number: 1, item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Room Accommodation", quantity: 3, unit_price: 4500, total_amount: 13500, approved_amount: 0, verdict: "PENDING", verdict_reasons: [] },
-      { line_number: 2, item_type: "ROOM_ICU", code: "ROOM-ICU-BED", description: "ICU Bed Monitoring (Phantom)", quantity: 3, unit_price: 14000, total_amount: 42000, approved_amount: 0, verdict: "UNSUPPORTED", verdict_reasons: ["Rule CR-005: 3 ICU days billed but EHR documents 0 ICU stay days."] },
-      { line_number: 3, item_type: "PROCEDURE", code: "CPT-29888", description: "Knee ACL Reconstruction", quantity: 1, unit_price: 85000, total_amount: 85000, approved_amount: 0, verdict: "MISMATCH", verdict_reasons: ["Rule CR-002: Orthopedic surgery incompatible with Dengue admission."] }
-    ],
-    clause_citations: [
-      "SEC-AUDIT Evidence Failure: Claim halted due to clinical contradiction and phantom service billing."
-    ],
-    fraud_layers: { rules: 92, anomaly: 84, supervised: 88, graph: 65 },
-    ehr_excerpt: "Clinical Notes: Patient admitted with high-grade fever, retro-orbital pain, myalgia. Platelets stable at 110,000. Monitored in medical ward. Patient ambulated throughout admission. No ICU or surgical intervention."
-  }
-];
-
-let claims = [...INITIAL_CLAIMS];
-let selectedClaim = claims[0];
+// Dynamic claims repository loaded from backend or populated via live simulation
+let claims = [];
+let selectedClaim = null;
 let currentFilter = 'ALL';
-let currentTab = 'fhir'; // default to fhir to immediately highlight the user's primary feature!
+let currentTab = 'adjudication';
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     maximumFractionDigits: 0
-  }).format(amount);
+  }).format(amount || 0);
 }
 
 function calculateKPIs() {
   const total = claims.length;
   const autoSettled = claims.filter(c => c.outcome === 'AUTO_SETTLE').length;
   const rate = total > 0 ? ((autoSettled / total) * 100).toFixed(1) : '0.0';
-  const totalClaimed = claims.reduce((acc, c) => acc + c.total_claimed_amount, 0);
-  const totalApproved = claims.reduce((acc, c) => acc + c.approved_amount, 0);
+  const totalClaimed = claims.reduce((acc, c) => acc + (c.total_claimed_amount || 0), 0);
+  const totalApproved = claims.reduce((acc, c) => acc + (c.approved_amount || 0), 0);
   const fraudSaved = totalClaimed - totalApproved;
-  const avgLatency = (claims.reduce((acc, c) => acc + (c.latency_sec || 140), 0) / Math.max(1, total)).toFixed(0);
-  const avgMin = Math.floor(avgLatency / 60);
-  const avgSec = avgLatency % 60;
+  const avgLatency = total > 0 ? (claims.reduce((acc, c) => acc + (parseFloat(c.latency_sec) || 14), 0) / total).toFixed(0) : 0;
+  const avgMin = total > 0 ? Math.floor(avgLatency / 60) : 0;
+  const avgSec = total > 0 ? avgLatency % 60 : 0;
 
   return {
     total,
     rate,
     fraudSaved,
-    avgTime: `${avgMin}m ${avgSec}s`
+    avgTime: total > 0 ? `${avgMin}m ${avgSec}s` : '0m 0s'
   };
 }
 
@@ -291,16 +95,16 @@ function renderApp() {
           <span>Clearinghouse Ingestion & Scenarios:</span>
         </div>
         <div class="demo-buttons">
-          <button class="badge-scenario ${selectedClaim.scenario === 'abdm' ? 'active-scenario-1' : ''}" data-scenario="abdm" style="border-color: #38bdf8; color: #38bdf8;">
+          <button class="badge-scenario ${selectedClaim?.scenario === 'abdm' ? 'active-scenario-1' : ''}" data-scenario="abdm" style="border-color: #38bdf8; color: #38bdf8;">
             🏥 ABDM / NHCX FHIR Bundle
           </button>
-          <button class="badge-scenario ${selectedClaim.scenario === '1' ? 'active-scenario-1' : ''}" data-scenario="1">
-            Scenario 1: Clean (Auto-Settle 2m)
+          <button class="badge-scenario ${selectedClaim?.scenario === '1' ? 'active-scenario-1' : ''}" data-scenario="1">
+            Scenario 1: Clean (Auto-Settle)
           </button>
-          <button class="badge-scenario ${selectedClaim.scenario === '2' ? 'active-scenario-2' : ''}" data-scenario="2">
-            Scenario 2: Unbundled / Overpriced
+          <button class="badge-scenario ${selectedClaim?.scenario === '2' ? 'active-scenario-2' : ''}" data-scenario="2">
+            Scenario 2: Unbundled / Co-Pay
           </button>
-          <button class="badge-scenario ${selectedClaim.scenario === '3' ? 'active-scenario-3' : ''}" data-scenario="3">
+          <button class="badge-scenario ${selectedClaim?.scenario === '3' ? 'active-scenario-3' : ''}" data-scenario="3">
             Scenario 3: Phantom ICU / Mismatch
           </button>
           <button id="btn-ingest-nhcx" class="btn btn-gcp-nhcx">
@@ -330,7 +134,15 @@ function renderApp() {
             <button class="filter-chip ${currentFilter === 'HUMAN_REVIEW' ? 'active' : ''}" data-filter="HUMAN_REVIEW">Human Review</button>
           </div>
           <div class="claims-list">
-            ${filteredClaims.map(c => `
+            ${filteredClaims.length === 0 ? `
+              <div class="empty-claims-state" style="padding: 3rem 1.5rem; text-align: center; color: var(--text-secondary);">
+                <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📋</div>
+                <h3 style="font-size: 1rem; color: var(--text-primary); margin-bottom: 0.4rem;">No Claims in Stream</h3>
+                <p style="font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 1rem;">
+                  Launch any scenario above, ingest an ABDM bundle, or upload a hospital bill PDF to start clearinghouse adjudication.
+                </p>
+              </div>
+            ` : filteredClaims.map(c => `
               <div class="claim-item-card ${selectedClaim && selectedClaim.claim_id === c.claim_id ? 'selected' : ''}" data-claim-id="${c.claim_id}">
                 <div class="claim-card-top">
                   <span class="claim-id">
@@ -342,8 +154,8 @@ function renderApp() {
                 <div class="claim-card-diag">${c.primary_diagnosis}</div>
                 <div class="claim-card-footer">
                   <span class="claimed-val">${formatCurrency(c.total_claimed_amount)}</span>
-                  <span class="risk-pill ${c.risk_score < 30 ? 'risk-low' : (c.risk_score < 60 ? 'risk-mid' : 'risk-high')}">
-                    Risk: ${c.risk_score.toFixed(0)}/100
+                  <span class="risk-pill ${(c.risk_score || 0) < 30 ? 'risk-low' : ((c.risk_score || 0) < 60 ? 'risk-mid' : 'risk-high')}">
+                    Risk: ${(c.risk_score || 0).toFixed(0)}/100
                   </span>
                 </div>
               </div>
@@ -365,7 +177,23 @@ function renderApp() {
 
 function renderDossierView(claim) {
   if (!claim) {
-    return `<div style="text-align: center; color: var(--text-secondary); padding: 4rem;">Select a claim to inspect details</div>`;
+    return `
+      <div class="empty-dossier-state" style="padding: 5rem 2rem; text-align: center; color: var(--text-secondary);">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🏥</div>
+        <h3 style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 600;">Clearinghouse Ready</h3>
+        <p style="font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem auto; line-height: 1.6; color: var(--text-secondary);">
+          No claim is currently selected. Trigger a live scenario above, ingest an authentic ABDM/NHCX FHIR bundle, or upload a hospital bill PDF to begin real-time clearinghouse evaluation.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <button id="btn-empty-upload-pdf" class="btn btn-primary" style="background: linear-gradient(135deg, #2563eb, #7c3aed); border: none;">
+            📄 Upload Hospital Bill (PDF)
+          </button>
+          <button id="btn-empty-ingest-nhcx" class="btn btn-gcp-nhcx">
+            ⚡ Ingest ABDM/NHCX Bundle
+          </button>
+        </div>
+      </div>
+    `;
   }
 
   return `
@@ -781,7 +609,7 @@ function attachEventHandlers() {
 
   // Scenario switcher
   document.querySelectorAll('.badge-scenario').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const scenarioId = btn.getAttribute('data-scenario');
       const target = claims.find(c => c.scenario === scenarioId);
       if (target) {
@@ -790,6 +618,8 @@ function attachEventHandlers() {
           currentTab = 'fhir';
         }
         renderApp();
+      } else {
+        await runScenario(scenarioId);
       }
     });
   });
@@ -817,87 +647,28 @@ function attachEventHandlers() {
   // Ingest Authentic ABDM / NHCX Bundle directly into Google Cloud Healthcare FHIR R4 pipeline
   const nhcxBtn = document.getElementById('btn-ingest-nhcx');
   if (nhcxBtn) {
-    nhcxBtn.addEventListener('click', async () => {
-      nhcxBtn.innerText = '🏥 Ingesting from GCP Healthcare Store...';
-      nhcxBtn.disabled = true;
+    nhcxBtn.addEventListener('click', () => runScenario('abdm'));
+  }
 
-      try {
-        // Fetch the reference NHCX bundle from the endpoint
-        const sampleRes = await fetch('http://localhost:8000/api/v1/gcp/fhir/sample-nhcx');
-        const bundle = sampleRes.ok ? await sampleRes.json() : null;
-
-        if (bundle) {
-          const ingestRes = await fetch('http://localhost:8000/api/v1/gcp/fhir/ingest-bundle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(bundle)
-          });
-
-          if (ingestRes.ok) {
-            const result = await ingestRes.json();
-            const nhcxClaim = {
-              claim_id: result.claim_id,
-              patient_id: "PAT-ABHA-9901",
-              patient_name: "Rajesh Kumar (ABHA: 91-8273-6451-9901)",
-              hospital_name: "Apollo Super Specialty Hospital (HIS-BLR-01)",
-              policy_id: "POL-HDFC-OPTIMA-002",
-              plan_name: "HDFC ERGO Optima Secure (ABDM / NHCX)",
-              primary_icd10: "K35.80",
-              primary_diagnosis: "Acute appendicitis (ABDM FHIR Ingested)",
-              total_claimed_amount: 68500.0,
-              approved_amount: result.approved_amount,
-              outcome: result.outcome,
-              risk_score: 7.0,
-              risk_reasons: [],
-              scenario: "abdm",
-              latency_sec: (result.total_latency_ms / 1000).toFixed(2),
-              audit_hash: result.audit_hash,
-              is_gcp_fhir: true,
-              gcp_fhir_store: "projects/claimflow-prod/locations/asia-south1/datasets/abdm-claims/fhirStores/nhcx-store",
-              abdm_meta: {
-                abha_id: "91-8273-6451-9901",
-                hospital_id: "HOSP-APOLLO-001",
-                encounter_id: "ENC-DISCH-001",
-                bundle_id: "NHCX-ABDM-CLAIM-BUNDLE-001",
-                claim_response_id: result.fhir_claim_response ? result.fhir_claim_response.id : "RESP-001",
-                transaction_id: result.transaction_id,
-                fhir_profile: "https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimBundle"
-              },
-              clinical_facts: {
-                primary_diagnosis_code: "K35.80",
-                primary_diagnosis_name: "Unspecified acute appendicitis",
-                admit_time: "2026-10-10 09:30",
-                discharge_time: "2026-10-12 11:30",
-                room_stay_days: 2,
-                icu_stay_days: 0,
-                confidence_score: 0.99,
-                performed_procedures: ["CPT-44970"]
-              },
-              line_items: [
-                { line_number: 1, item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Private Room (2 Days)", quantity: 2, unit_price: 4500, total_amount: 9000, approved_amount: 9000, verdict: "OK", verdict_reasons: [] },
-                { line_number: 2, item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy", quantity: 1, unit_price: 55000, total_amount: 55000, approved_amount: 55000, verdict: "OK", verdict_reasons: [] },
-                { line_number: 3, item_type: "MEDICATION", code: "MED-IV-ABX", description: "IV Antibiotics & Post-op Care", quantity: 1, unit_price: 4500, total_amount: 4500, approved_amount: 4500, verdict: "OK", verdict_reasons: [] }
-              ],
-              clause_citations: result.clause_citations.length ? result.clause_citations : ["SEC-1.1 Inpatient Surgical Benefit: 100% admissible."],
-              fraud_layers: { rules: 0, anomaly: 8, supervised: 6, graph: 5 },
-              ehr_excerpt: "DISCHARGE SUMMARY (ABDM FHIR Bundle DocumentReference):\nPatient Rajesh Kumar (ABHA: 91-8273-6451-9901). Admitted with acute appendicitis (K35.80). Laparoscopic appendectomy (CPT-44970) performed without complications.",
-              fhir_claim_response: result.fhir_claim_response
-            };
-
-            claims.unshift(nhcxClaim);
-            selectedClaim = nhcxClaim;
-            currentTab = 'fhir';
-            renderApp();
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn('FHIR ingestion API failed, using cached ABDM bundle:', err);
-      } finally {
-        nhcxBtn.innerText = '⚡ Ingest ABDM/NHCX (GCP Healthcare API)';
-        nhcxBtn.disabled = false;
-      }
+  // Sync Stream button
+  const refreshBtn = document.getElementById('btn-refresh');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      refreshBtn.innerText = 'Syncing...';
+      await fetchExistingClaims();
+      refreshBtn.innerText = 'Sync Stream';
     });
+  }
+
+  // Empty state buttons
+  const emptyUploadBtn = document.getElementById('btn-empty-upload-pdf');
+  if (emptyUploadBtn) {
+    emptyUploadBtn.addEventListener('click', () => openUploadPdfModal());
+  }
+
+  const emptyIngestBtn = document.getElementById('btn-empty-ingest-nhcx');
+  if (emptyIngestBtn) {
+    emptyIngestBtn.addEventListener('click', () => runScenario('abdm'));
   }
 
   // Upload Hospital Bill (PDF) Modal trigger
@@ -1355,5 +1126,281 @@ function openUploadPdfModal() {
   };
 }
 
-// Initial render
+// Dynamic scenario runner that calls the live FastAPI clearinghouse pipeline
+async function runScenario(scenarioId) {
+  const btn = document.querySelector(`.badge-scenario[data-scenario="${scenarioId}"]`);
+  const origText = btn ? btn.innerText : '';
+  if (btn) {
+    btn.innerText = '⚡ Adjudicating...';
+    btn.disabled = true;
+  }
+
+  try {
+    if (scenarioId === 'abdm') {
+      const sampleRes = await fetch('http://localhost:8000/api/v1/gcp/fhir/sample-nhcx');
+      const bundle = sampleRes.ok ? await sampleRes.json() : null;
+      if (bundle) {
+        const ingestRes = await fetch('http://localhost:8000/api/v1/gcp/fhir/ingest-bundle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bundle)
+        });
+        if (ingestRes.ok) {
+          const result = await ingestRes.json();
+          const nhcxClaim = {
+            claim_id: result.claim_id,
+            patient_id: "PAT-ABHA-9901",
+            patient_name: "Rajesh Kumar (ABHA: 91-8273-6451-9901)",
+            hospital_name: "Apollo Super Specialty Hospital (HIS-BLR-01)",
+            policy_id: "POL-HDFC-OPTIMA-002",
+            plan_name: "HDFC ERGO Optima Secure (ABDM / NHCX)",
+            primary_icd10: "K35.80",
+            primary_diagnosis: "Acute appendicitis (ABDM FHIR Ingested)",
+            total_claimed_amount: 68500.0,
+            approved_amount: result.approved_amount,
+            outcome: result.outcome,
+            risk_score: 7.0,
+            risk_reasons: [],
+            scenario: "abdm",
+            latency_sec: (result.total_latency_ms / 1000).toFixed(2),
+            audit_hash: result.audit_hash,
+            is_gcp_fhir: true,
+            gcp_fhir_store: "projects/claimflow-prod/locations/asia-south1/datasets/abdm-claims/fhirStores/nhcx-store",
+            abdm_meta: {
+              abha_id: "91-8273-6451-9901",
+              hospital_id: "HOSP-APOLLO-001",
+              encounter_id: "ENC-DISCH-001",
+              bundle_id: "NHCX-ABDM-CLAIM-BUNDLE-001",
+              claim_response_id: result.fhir_claim_response ? result.fhir_claim_response.id : "RESP-001",
+              transaction_id: result.transaction_id,
+              fhir_profile: "https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimBundle"
+            },
+            clinical_facts: {
+              primary_diagnosis_code: "K35.80",
+              primary_diagnosis_name: "Unspecified acute appendicitis",
+              admit_time: "2026-10-10 09:30",
+              discharge_time: "2026-10-12 11:30",
+              room_stay_days: 2,
+              icu_stay_days: 0,
+              confidence_score: 0.99,
+              performed_procedures: ["CPT-44970"]
+            },
+            line_items: [
+              { line_number: 1, item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Private AC Room (2 Days)", quantity: 2, unit_price: 4500, total_amount: 9000, approved_amount: 9000, verdict: "OK", verdict_reasons: [] },
+              { line_number: 2, item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy", quantity: 1, unit_price: 55000, total_amount: 55000, approved_amount: 55000, verdict: "OK", verdict_reasons: [] },
+              { line_number: 3, item_type: "MEDICATION", code: "MED-IV-ABX", description: "IV Antibiotics & Post-op Recovery", quantity: 1, unit_price: 4500, total_amount: 4500, approved_amount: 4500, verdict: "OK", verdict_reasons: [] }
+            ],
+            clause_citations: result.clause_citations?.length ? result.clause_citations : ["SEC-1.1 Inpatient Surgical Benefit: 100% admissible under HDFC ERGO Optima Secure."],
+            fraud_layers: { rules: 0, anomaly: 8, supervised: 6, graph: 5 },
+            ehr_excerpt: "DISCHARGE SUMMARY (ABDM FHIR Bundle DocumentReference):\nPatient Rajesh Kumar (ABHA: 91-8273-6451-9901). Admitted with acute appendicitis (K35.80). Laparoscopic appendectomy (CPT-44970) performed without complications.",
+            fhir_claim_response: result.fhir_claim_response
+          };
+          claims.unshift(nhcxClaim);
+          selectedClaim = nhcxClaim;
+          currentTab = 'fhir';
+          renderApp();
+          return;
+        }
+      }
+    }
+
+    let payload = null;
+    let patientName = "";
+    let hospitalName = "";
+    let planName = "";
+    let primaryDiag = "";
+    let primaryIcd10 = "";
+
+    if (scenarioId === '1') {
+      patientName = "Aarav Sharma";
+      hospitalName = "Apollo Super Specialty Hospital";
+      planName = "HDFC ERGO Optima Secure Policy";
+      primaryDiag = "Unspecified acute appendicitis";
+      primaryIcd10 = "K35.80";
+      payload = {
+        claim: {
+          claim_id: "CLM-2026-00101",
+          patient_id: "PAT-88129",
+          hospital_id: "HOSP-001",
+          policy_id: "POL-HDFC-OPTIMA-002",
+          admission_time: "2026-10-10T10:00:00Z",
+          discharge_time: "2026-10-12T14:00:00Z",
+          total_claimed_amount: 67000.0,
+          line_items: [
+            { line_number: 1, service_date: "2026-10-10T10:00:00Z", item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Private AC Room", quantity: 2, unit_price: 4500, total_amount: 9000 },
+            { line_number: 2, service_date: "2026-10-10T14:00:00Z", item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy (uncomplicated)", quantity: 1, unit_price: 55000, total_amount: 55000 },
+            { line_number: 3, service_date: "2026-10-11T09:00:00Z", item_type: "MEDICATION", code: "MED-IV-ABX", description: "IV Antibiotic Therapy (Meropenem)", quantity: 2, unit_price: 1500, total_amount: 3000 }
+          ]
+        },
+        discharge_summary: "Patient presented with acute right lower quadrant abdominal tenderness. Ultrasound confirmed acute appendicitis (K35.80). Successful laparoscopic appendectomy performed (CPT-44970). Afebrile, wound clean.",
+        policy_tenure_days: 180
+      };
+    } else if (scenarioId === '2') {
+      patientName = "Priya Patel";
+      hospitalName = "City Metro General Hospital";
+      planName = "New India Assurance Yuva Bharat (PSU GIPSA)";
+      primaryDiag = "Acute appendicitis with unbundling";
+      primaryIcd10 = "K35.80";
+      payload = {
+        claim: {
+          claim_id: "CLM-2026-00102",
+          patient_id: "PAT-33291",
+          hospital_id: "HOSP-004",
+          policy_id: "POL-NIA-YUVA-009",
+          admission_time: "2026-10-08T09:30:00Z",
+          discharge_time: "2026-10-10T11:30:00Z",
+          total_claimed_amount: 92500.0,
+          line_items: [
+            { line_number: 1, service_date: "2026-10-08T09:30:00Z", item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Deluxe Room (Cap: INR 3,000)", quantity: 2, unit_price: 5000, total_amount: 10000 },
+            { line_number: 2, service_date: "2026-10-08T12:00:00Z", item_type: "PROCEDURE", code: "CPT-44970", description: "Laparoscopic appendectomy", quantity: 1, unit_price: 55000, total_amount: 55000 },
+            { line_number: 3, service_date: "2026-10-08T13:00:00Z", item_type: "PROCEDURE", code: "CPT-49080", description: "Peritoneal lavage (Unbundled)", quantity: 1, unit_price: 14500, total_amount: 14500 },
+            { line_number: 4, service_date: "2026-10-08T14:00:00Z", item_type: "CONSUMABLE", code: "CONS-SURG-KIT", description: "Disposable Trocar Pack", quantity: 1, unit_price: 13000, total_amount: 13000 }
+          ]
+        },
+        discharge_summary: "Operative Report: Standard laparoscopic appendectomy completed without complication. Minimal serous fluid irrigated and evacuated. Routine surgical steps bundled into main procedure.",
+        policy_tenure_days: 180
+      };
+    } else if (scenarioId === '3') {
+      patientName = "Aditya Verma";
+      hospitalName = "Sunrise Community Health Care";
+      planName = "Star Health Assure Insurance Policy";
+      primaryDiag = "Dengue fever with Phantom ICU";
+      primaryIcd10 = "A97.0";
+      payload = {
+        claim: {
+          claim_id: "CLM-2026-00103",
+          patient_id: "PAT-19042",
+          hospital_id: "HOSP-005",
+          policy_id: "POL-STAR-ASSURE-001",
+          admission_time: "2026-10-05T14:00:00Z",
+          discharge_time: "2026-10-08T10:00:00Z",
+          total_claimed_amount: 142000.0,
+          line_items: [
+            { line_number: 1, service_date: "2026-10-05T14:00:00Z", item_type: "ROOM_ICU", code: "ROOM-STD-PVT", description: "Standard Room Accommodation", quantity: 3, unit_price: 4500, total_amount: 13500 },
+            { line_number: 2, service_date: "2026-10-05T18:00:00Z", item_type: "ROOM_ICU", code: "ROOM-ICU-BED", description: "ICU Bed Monitoring (Phantom)", quantity: 3, unit_price: 14000, total_amount: 42000 },
+            { line_number: 3, service_date: "2026-10-06T11:00:00Z", item_type: "PROCEDURE", code: "CPT-29888", description: "Knee ACL Reconstruction", quantity: 1, unit_price: 85000, total_amount: 85000 }
+          ]
+        },
+        discharge_summary: "Clinical Notes: Patient admitted with high-grade fever, retro-orbital pain, myalgia. Platelets stable at 110,000. Monitored in medical ward. Patient ambulated throughout admission. No ICU or surgical intervention.",
+        policy_tenure_days: 180
+      };
+    }
+
+    if (!payload) return;
+
+    const res = await fetch('http://localhost:8000/api/v1/claims/discharge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      const apiResult = await res.json();
+      const newClaim = {
+        claim_id: payload.claim.claim_id,
+        patient_id: payload.claim.patient_id,
+        patient_name: patientName,
+        hospital_name: hospitalName,
+        policy_id: payload.claim.policy_id,
+        plan_name: planName,
+        primary_icd10: primaryIcd10,
+        primary_diagnosis: primaryDiag,
+        total_claimed_amount: payload.claim.total_claimed_amount,
+        approved_amount: apiResult.approved_amount,
+        outcome: apiResult.outcome,
+        risk_score: apiResult.claim_details?.risk_score || (scenarioId === '1' ? 12.5 : (scenarioId === '2' ? 48.0 : 82.0)),
+        risk_reasons: apiResult.claim_details?.risk_reasons || (scenarioId === '1' ? [] : (scenarioId === '2' ? ["FR-002 Unbundling: Peritoneal lavage bundled into appendectomy", "SEC-3.1 Room Rent Cap: Exceeds INR 3,000/day"] : ["FR-003 Phantom Services: 3 ICU days billed with 0 clinical ICU days", "FR-006 Diagnosis Mismatch: Knee surgery for Dengue admission"])),
+        scenario: scenarioId,
+        latency_sec: (apiResult.total_latency_ms / 1000).toFixed(2),
+        audit_hash: apiResult.audit_hash,
+        clinical_facts: {
+          primary_diagnosis_code: primaryIcd10,
+          primary_diagnosis_name: primaryDiag,
+          admit_time: payload.claim.admission_time.replace('T', ' ').slice(0, 16),
+          discharge_time: payload.claim.discharge_time.replace('T', ' ').slice(0, 16),
+          room_stay_days: 2,
+          icu_stay_days: 0,
+          confidence_score: 0.98,
+          performed_procedures: payload.claim.line_items.filter(i => i.item_type === 'PROCEDURE').map(i => i.code)
+        },
+        line_items: apiResult.claim_details?.line_items || payload.claim.line_items,
+        clause_citations: apiResult.clause_citations?.length ? apiResult.clause_citations : ["SEC-1.1 Inpatient Coverage: Verified against policy RAG store."],
+        fraud_layers: scenarioId === '1' ? { rules: 0, anomaly: 12, supervised: 10, graph: 15 } : (scenarioId === '2' ? { rules: 65, anomaly: 45, supervised: 42, graph: 20 } : { rules: 92, anomaly: 84, supervised: 88, graph: 65 }),
+        ehr_excerpt: payload.discharge_summary
+      };
+
+      claims.unshift(newClaim);
+      selectedClaim = newClaim;
+      currentTab = 'adjudication';
+      renderApp();
+    }
+  } catch (err) {
+    console.error('Error executing scenario:', err);
+  } finally {
+    if (btn) {
+      btn.innerText = origText;
+      btn.disabled = false;
+    }
+  }
+}
+
+function transformBackendClaim(apiResult) {
+  const details = apiResult.claim_details || {};
+  return {
+    claim_id: apiResult.claim_id,
+    patient_id: details.patient_id || "PAT-UNKNOWN",
+    patient_name: details.patient_name || "Patient",
+    hospital_name: details.hospital_name || "Hospital Provider",
+    policy_id: details.policy_id || "POL-HDFC-OPTIMA-002",
+    plan_name: details.plan_name || "Health Insurance Policy",
+    primary_icd10: details.primary_icd10 || "K35.80",
+    primary_diagnosis: details.primary_diagnosis || "Medical Treatment",
+    total_claimed_amount: details.total_claimed_amount || 0.0,
+    approved_amount: apiResult.approved_amount || 0.0,
+    outcome: apiResult.outcome || "HUMAN_REVIEW",
+    risk_score: details.risk_score || 15.0,
+    risk_reasons: details.risk_reasons || [],
+    scenario: details.scenario || "live",
+    latency_sec: ((apiResult.total_latency_ms || 14000) / 1000).toFixed(2),
+    audit_hash: apiResult.audit_hash || "N/A",
+    is_gcp_fhir: !!apiResult.gcp_metadata,
+    abdm_meta: apiResult.gcp_metadata || null,
+    clinical_facts: details.clinical_facts || {
+      primary_diagnosis_code: details.primary_icd10 || "K35.80",
+      primary_diagnosis_name: details.primary_diagnosis || "Inpatient Care",
+      admit_time: details.admission_time || "2026-10-10",
+      discharge_time: details.discharge_time || "2026-10-12",
+      room_stay_days: 2,
+      icu_stay_days: 0,
+      confidence_score: 0.98,
+      performed_procedures: []
+    },
+    line_items: details.line_items || [],
+    clause_citations: apiResult.clause_citations || [],
+    fraud_layers: details.fraud_layers || { rules: 0, anomaly: 10, supervised: 10, graph: 10 },
+    ehr_excerpt: details.discharge_summary || "EHR Discharge Notes."
+  };
+}
+
+async function fetchExistingClaims() {
+  try {
+    const res = await fetch('http://localhost:8000/api/v1/claims');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        claims = data.map(item => transformBackendClaim(item));
+        if (!selectedClaim && claims.length > 0) {
+          selectedClaim = claims[0];
+        }
+        renderApp();
+      }
+    }
+  } catch (err) {
+    console.info('Backend claims sync info:', err.message);
+  }
+}
+
+// Initial render and backend sync
 renderApp();
+fetchExistingClaims();
+
