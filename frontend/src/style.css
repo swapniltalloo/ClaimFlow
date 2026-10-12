@@ -823,3 +823,104 @@ header {
   gap: 0.4rem;
 }
 
+/* Hospital Automated Appeal & Evidence Gathering Styling */
+.btn-appeal {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.btn-appeal:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+}
+
+.evidence-packet-card {
+  background: #0b1329;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.evidence-doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.evidence-doc-item {
+  background: rgba(16, 185, 129, 0.06);
+  border-left: 3px solid #10b981;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.evidence-doc-info strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #f3f4f6;
+}
+
+.evidence-doc-info span {
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.nhcx-pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+}
+
+.appeal-letter-viewer {
+  background: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #cbd5e1;
+  max-height: 240px;
+  overflow-y: auto;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.policy-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.policy-badge-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+}
+
+.policy-badge-card strong {
+  display: block;
+  font-size: 0.8rem;
+  color: #38bdf8;
+}
+
+.policy-badge-card span {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+

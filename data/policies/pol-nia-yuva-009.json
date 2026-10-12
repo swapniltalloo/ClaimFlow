@@ -1,0 +1,24 @@
+{
+  "policy_id": "POL-NIA-YUVA-009",
+  "plan_name": "New India Assurance Yuva Bharat",
+  "insurer": "The New India Assurance Co. (PSU)",
+  "room_rent_cap_daily": 3000.0,
+  "room_category": "1% of Sum Insured / Daily Cap INR 3,000",
+  "icu_rent_cap_daily": 6000.0,
+  "copay_percentage": 10.0,
+  "initial_waiting_period_days": 30,
+  "specific_illness_waiting_months": 24,
+  "pdf_filename": "yuva_bharat.pdf",
+  "total_clauses": 14,
+  "exclusions": [
+    "Investigation & Diagnostic only without active treatment",
+    "Cosmetic or plastic surgery",
+    "Unproven or experimental treatments",
+    "External congenital anomalies"
+  ],
+  "sub_limits": {
+    "CATARACT": 40000.0,
+    "HERNIA": 60000.0,
+    "JOINT_REPLACEMENT": 150000.0
+  }
+}

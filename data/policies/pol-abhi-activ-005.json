@@ -1,0 +1,24 @@
+{
+  "policy_id": "POL-ABHI-ACTIV-005",
+  "plan_name": "Aditya Birla Activ Health Enhanced",
+  "insurer": "Aditya Birla Health Insurance Co.",
+  "room_rent_cap_daily": null,
+  "room_category": "Single Private AC Room",
+  "icu_rent_cap_daily": null,
+  "copay_percentage": 0.0,
+  "initial_waiting_period_days": 30,
+  "specific_illness_waiting_months": 24,
+  "pdf_filename": "aditya_birla.pdf",
+  "total_clauses": 14,
+  "exclusions": [
+    "Investigation & Diagnostic only without active treatment",
+    "Cosmetic or plastic surgery",
+    "Unproven or experimental treatments",
+    "External congenital anomalies"
+  ],
+  "sub_limits": {
+    "CATARACT": 40000.0,
+    "HERNIA": 60000.0,
+    "JOINT_REPLACEMENT": 150000.0
+  }
+}

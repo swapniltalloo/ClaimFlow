@@ -1,0 +1,24 @@
+{
+  "policy_id": "POL-ICICI-ELEVATE-006",
+  "plan_name": "ICICI Lombard Elevate Health Plan",
+  "insurer": "ICICI Lombard General Insurance",
+  "room_rent_cap_daily": null,
+  "room_category": "Single Private AC Room",
+  "icu_rent_cap_daily": null,
+  "copay_percentage": 0.0,
+  "initial_waiting_period_days": 30,
+  "specific_illness_waiting_months": 24,
+  "pdf_filename": "icici_elevate.pdf",
+  "total_clauses": 13,
+  "exclusions": [
+    "Investigation & Diagnostic only without active treatment",
+    "Cosmetic or plastic surgery",
+    "Unproven or experimental treatments",
+    "External congenital anomalies"
+  ],
+  "sub_limits": {
+    "CATARACT": 40000.0,
+    "HERNIA": 60000.0,
+    "JOINT_REPLACEMENT": 150000.0
+  }
+}

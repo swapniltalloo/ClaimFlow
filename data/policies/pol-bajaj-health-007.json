@@ -1,0 +1,24 @@
+{
+  "policy_id": "POL-BAJAJ-HEALTH-007",
+  "plan_name": "Bajaj Allianz Health Guard",
+  "insurer": "Bajaj Allianz General Insurance Co.",
+  "room_rent_cap_daily": 4000.0,
+  "room_category": "Standard Room (Max 1% of Sum Insured / 4,000)",
+  "icu_rent_cap_daily": 8000.0,
+  "copay_percentage": 10.0,
+  "initial_waiting_period_days": 30,
+  "specific_illness_waiting_months": 24,
+  "pdf_filename": "bajaj.pdf",
+  "total_clauses": 12,
+  "exclusions": [
+    "Investigation & Diagnostic only without active treatment",
+    "Cosmetic or plastic surgery",
+    "Unproven or experimental treatments",
+    "External congenital anomalies"
+  ],
+  "sub_limits": {
+    "CATARACT": 40000.0,
+    "HERNIA": 60000.0,
+    "JOINT_REPLACEMENT": 150000.0
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "policy_id": "POL-CARE-HEALTH-003",
+  "plan_name": "Care Health Insurance Policy",
+  "insurer": "Care Health Insurance Limited",
+  "room_rent_cap_daily": 5000.0,
+  "room_category": "Single Private Room (Up to 5000/day)",
+  "icu_rent_cap_daily": 10000.0,
+  "copay_percentage": 0.0,
+  "initial_waiting_period_days": 30,
+  "specific_illness_waiting_months": 24,
+  "pdf_filename": "care_health.pdf",
+  "total_clauses": 14,
+  "exclusions": [
+    "Investigation & Diagnostic only without active treatment",
+    "Cosmetic or plastic surgery",
+    "Unproven or experimental treatments",
+    "External congenital anomalies"
+  ],
+  "sub_limits": {
+    "CATARACT": 40000.0,
+    "HERNIA": 60000.0,
+    "JOINT_REPLACEMENT": 150000.0
+  }
+}

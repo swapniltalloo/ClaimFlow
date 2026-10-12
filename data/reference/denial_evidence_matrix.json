@@ -1,0 +1,129 @@
+[
+  {
+    "denial_code": "IRDAI-QRY-001",
+    "category": "IMPLANT_VERIFICATION",
+    "title": "Missing Surgical Implant Proof & Packaging Barcode",
+    "description": "Surgical implant or prosthetic device billed without verified manufacturer invoice, batch number, or packaging barcode sticker.",
+    "applicable_procedures": ["CPT-27236", "CPT-27447", "CPT-49505", "CPT-33533"],
+    "required_documents": [
+      {
+        "document_type": "IMPLANT_INVOICE",
+        "description": "Official manufacturer tax invoice with itemized serial and lot number",
+        "nhcx_code": "DOC-IMP-INV",
+        "mandatory": true
+      },
+      {
+        "document_type": "BARCODE_STICKER",
+        "description": "Sterile packaging outer barcode sticker affixed to operation theater register",
+        "nhcx_code": "DOC-IMP-BARCODE",
+        "mandatory": true
+      },
+      {
+        "document_type": "OPERATIVE_IMPLANT_NOTE",
+        "description": "Surgeon intraoperative note detailing size, placement, and fixation technique",
+        "nhcx_code": "DOC-OT-NOTE",
+        "mandatory": true
+      }
+    ],
+    "appeal_rationale_template": "Implant verification packet attached comprising original manufacturer invoice, packaging barcode sticker, and intraoperative placement records validating medical necessity and authentic procurement.",
+    "expected_resolution": "APPROVE_ITEM"
+  },
+  {
+    "denial_code": "IRDAI-QRY-002",
+    "category": "PATHOLOGY_VERIFICATION",
+    "title": "Missing Histopathology / Biopsy Confirmation",
+    "description": "Surgical excision or organ resection billed without specimen histopathology examination report.",
+    "applicable_procedures": ["CPT-44970", "CPT-47562", "CPT-58150", "CPT-19301"],
+    "required_documents": [
+      {
+        "document_type": "HISTOPATHOLOGY_REPORT",
+        "description": "NABL-accredited laboratory histopathology examination report confirming acute pathology",
+        "nhcx_code": "DOC-HISTOPATH",
+        "mandatory": true
+      },
+      {
+        "document_type": "SPECIMEN_DISPATCH_RECORD",
+        "description": "Operation room nurse specimen handover logbook entry",
+        "nhcx_code": "DOC-SPECIMEN-LOG",
+        "mandatory": false
+      }
+    ],
+    "appeal_rationale_template": "NABL laboratory histopathology report attached demonstrating histological verification of acute inflammation and justifying surgical resection.",
+    "expected_resolution": "APPROVE_ITEM"
+  },
+  {
+    "denial_code": "IRDAI-QRY-003",
+    "category": "MEDICAL_NECESSITY",
+    "title": "Inpatient Admission Medical Necessity Verification",
+    "description": "Inpatient hospitalization queried as investigation-only or conservative care without clinical indication for continuous parenteral therapy.",
+    "applicable_procedures": ["A97.0", "A09.0", "J20.9", "R50.9"],
+    "required_documents": [
+      {
+        "document_type": "HOURLY_VITALS_CHART",
+        "description": "Intensive monitoring flowsheet demonstrating hemodynamic instability or high fever spikes",
+        "nhcx_code": "DOC-VITALS-FLOW",
+        "mandatory": true
+      },
+      {
+        "document_type": "SERIAL_LABORATORY_TRENDS",
+        "description": "Daily laboratory trend sheets (e.g. Platelet drop, elevated Hematocrit, renal markers)",
+        "nhcx_code": "DOC-SERIAL-LABS",
+        "mandatory": true
+      },
+      {
+        "document_type": "IV_MEDICATION_CHART",
+        "description": "Nursing administration record for continuous parenteral fluids and IV antibiotics",
+        "nhcx_code": "DOC-IV-FLOW",
+        "mandatory": true
+      }
+    ],
+    "appeal_rationale_template": "Serial laboratory reports and intensive nursing flowsheet attached confirming acute hemodynamic decompensation requiring continuous inpatient parenteral intervention.",
+    "expected_resolution": "CONVERT_TO_INPATIENT_APPROVED"
+  },
+  {
+    "denial_code": "IRDAI-DEN-003",
+    "category": "UNBUNDLING_DISPUTE",
+    "title": "Unbundled Procedure Clinical Differentiation",
+    "description": "Component service flagged as mutually bundled under primary surgical package (Rule CR-003).",
+    "applicable_procedures": ["CPT-49080", "CPT-44970", "CPT-47562", "CPT-49505"],
+    "required_documents": [
+      {
+        "document_type": "DETAILED_OT_RECORD",
+        "description": "Comprehensive operative notes proving separate anatomical incision, distinct surgical pathology, or severe adhesiolysis exceeding 45 minutes",
+        "nhcx_code": "DOC-OT-COMPLEX",
+        "mandatory": true
+      },
+      {
+        "document_type": "SURGEON_CLINICAL_CERTIFICATE",
+        "description": "Treating consultant surgeon certificate providing clinical justification for independent procedure",
+        "nhcx_code": "DOC-SURGEON-CERT",
+        "mandatory": true
+      }
+    ],
+    "appeal_rationale_template": "Treating surgeon certificate and operative record attached demonstrating distinct anatomical field and exceptional surgical pathology justifying independent component billing under clinical guidelines.",
+    "expected_resolution": "RECONSIDER_UNBUNDLED_CHARGE"
+  },
+  {
+    "denial_code": "IRDAI-DEN-001",
+    "category": "WAITING_PERIOD_DISPUTE",
+    "title": "Pre-Existing Disease (PED) Waiting Period Refutation",
+    "description": "Claim rejected under 24-month specific illness waiting period clause or pre-existing disease exclusion.",
+    "applicable_procedures": ["K40.90", "K80.20", "M17.11", "N40.0"],
+    "required_documents": [
+      {
+        "document_type": "FIRST_CONSULTATION_NOTE",
+        "description": "Initial emergency room / OPD consultation record documenting acute de-novo onset without prior medical history",
+        "nhcx_code": "DOC-FIRST-OPD",
+        "mandatory": true
+      },
+      {
+        "document_type": "ATTENDING_PHYSICIAN_STATEMENT",
+        "description": "Declaration by treating physician confirming no prior symptomatic manifestation before policy inception",
+        "nhcx_code": "DOC-APS-CERT",
+        "mandatory": true
+      }
+    ],
+    "appeal_rationale_template": "Emergency initial consultation notes and attending physician statement attached verifying sudden acute manifestation with zero prior clinical history, refuting pre-existing condition classification.",
+    "expected_resolution": "OVERTURN_REJECTION"
+  }
+]

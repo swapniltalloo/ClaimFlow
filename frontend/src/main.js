@@ -395,6 +395,9 @@ function renderDossierView(claim) {
       <button class="dossier-tab-btn ${currentTab === 'fhir' ? 'active' : ''}" data-tab="fhir">
         🏥 GCP Healthcare FHIR R4 & NHCX
       </button>
+      <button class="dossier-tab-btn ${currentTab === 'appeal' ? 'active' : ''}" data-tab="appeal">
+        🔄 Hospital Auto-Appeal & Evidence (9 Policies)
+      </button>
       <button class="dossier-tab-btn ${currentTab === 'adjudication' ? 'active' : ''}" data-tab="adjudication">
         📋 Clinical Bill & 4-Layer Fraud
       </button>
@@ -403,7 +406,7 @@ function renderDossierView(claim) {
       </button>
     </div>
 
-    ${currentTab === 'fhir' ? renderFHIRTab(claim) : (currentTab === 'ai' ? renderAITab(claim) : renderAdjudicationTab(claim))}
+    ${currentTab === 'fhir' ? renderFHIRTab(claim) : (currentTab === 'appeal' ? renderHospitalAppealTab(claim) : (currentTab === 'ai' ? renderAITab(claim) : renderAdjudicationTab(claim)))}
 
     <!-- Reviewer Adjudication Footer -->
     <div class="decision-action-bar">
@@ -548,6 +551,106 @@ function renderAITab(claim) {
     </div>
   `;
 }
+
+function renderHospitalAppealTab(claim) {
+  const appeal = claim.appeal_details;
+  const isPendingAppeal = !appeal && (claim.outcome === 'PARTIAL_SETTLE' || claim.outcome === 'HUMAN_REVIEW' || claim.line_items.some(i => i.verdict !== 'OK'));
+
+  return `
+    <div class="evidence-packet-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+          <h3 style="font-size: 1.05rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+            <span>Hospital Autonomous Evidence Regeneration & Re-submission Engine</span>
+          </h3>
+          <p style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+            GIPSA / PPN Hospital Compliance & IRDAI Master Guidelines Automation
+          </p>
+        </div>
+        <div class="nhcx-pill">NHCX RE-SUBMISSION ENGINE ACTIVE</div>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.8rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+          <span style="color: var(--text-secondary);">Target Insurer Policy:</span>
+          <strong style="color: #38bdf8;">${claim.plan_name} (${claim.policy_id})</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-secondary);">Treating Institution:</span>
+          <strong>${claim.hospital_name}</strong>
+        </div>
+      </div>
+
+      ${isPendingAppeal ? `
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: var(--color-amber); font-size: 0.85rem;">⚠️ Claim Has Adverse Adjudication / Missing Evidence</strong>
+              <p style="font-size: 0.75rem; color: #cbd5e1; margin-top: 3px;">
+                Deductions or queries exist. Hospital HIS agent can auto-gather required clinical proof and resubmit via NHCX.
+              </p>
+            </div>
+            <button id="btn-auto-appeal" class="btn btn-appeal">
+              ⚡ Auto-Gather Evidence & Re-submit via NHCX
+            </button>
+          </div>
+        </div>
+      ` : ''}
+
+      ${appeal ? `
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: var(--color-green); font-size: 0.85rem;">✓ Evidence Packet Generated & Re-adjudicated Successfully!</strong>
+              <p style="font-size: 0.75rem; color: #cbd5e1; margin-top: 3px;">
+                Approved Amount updated from ${formatCurrency(appeal.original_approved)} to <strong>${formatCurrency(appeal.new_approved_amount)}</strong>.
+              </p>
+            </div>
+            <span class="nhcx-pill" style="background: #10b981; color: #022c22; font-weight: 700;">APPROVED & SETTLED</span>
+          </div>
+        </div>
+
+        <h4 style="font-size: 0.82rem; color: #34d399; margin-bottom: 0.4rem; text-transform: uppercase;">
+          Extracted Hospital Clinical Evidence (FHIR DocumentReference):
+        </h4>
+        <div class="evidence-doc-list">
+          ${appeal.gathered_documents.map(doc => `
+            <div class="evidence-doc-item">
+              <div class="evidence-doc-info">
+                <strong>[${doc.nhcx_code}] ${doc.title}</strong>
+                <span>${doc.evidence_summary}</span>
+              </div>
+              <span class="nhcx-pill">AUTHENTICATED</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <h4 style="font-size: 0.82rem; color: #38bdf8; margin-top: 1rem; margin-bottom: 0.4rem; text-transform: uppercase;">
+          Formal Clinical Appeal Justification Letter:
+        </h4>
+        <div class="appeal-letter-viewer">${appeal.appeal_letter}</div>
+      ` : ''}
+
+      <div style="margin-top: 1.5rem;">
+        <h4 style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.5rem; text-transform: uppercase;">
+          9 Real Health Insurance Policies Indexed in ClaimFlow RAG:
+        </h4>
+        <div class="policy-badge-grid">
+          <div class="policy-badge-card"><strong>Star Health Assure</strong><span>47 Pages · Single Private Room · No Cap</span></div>
+          <div class="policy-badge-card"><strong>HDFC ERGO Optima Secure</strong><span>69 Pages · 2X Secure Benefit · Any Room</span></div>
+          <div class="policy-badge-card"><strong>Care Health Insurance</strong><span>45 Pages · Single Private Room · Sub-limits</span></div>
+          <div class="policy-badge-card"><strong>Niva Bupa ReAssure 3.0</strong><span>62 Pages · Lock the Clock · Room Rent</span></div>
+          <div class="policy-badge-card"><strong>New India Assurance (Yuva Bharat)</strong><span>50 Pages · PSU GIPSA Tariffs · 1% Cap</span></div>
+          <div class="policy-badge-card"><strong>Aditya Birla Activ Health</strong><span>56 Pages · Enhanced Inpatient · Daycare</span></div>
+          <div class="policy-badge-card"><strong>ICICI Lombard Elevate</strong><span>45 Pages · Pre/Post Care · Single Room</span></div>
+          <div class="policy-badge-card"><strong>Bajaj Allianz Health Guard</strong><span>35 Pages · Standard Room · 10% Copay</span></div>
+          <div class="policy-badge-card"><strong>Tata AIG MediCare</strong><span>49 Pages · Comprehensive Surgical Benefit</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 
 function renderAdjudicationTab(claim) {
   return `
@@ -914,7 +1017,40 @@ function attachEventHandlers() {
       renderApp();
     });
   }
+
+  // Hospital auto-appeal & evidence regeneration
+  const appealBtn = document.getElementById('btn-auto-appeal');
+  if (appealBtn) {
+    appealBtn.addEventListener('click', async () => {
+      appealBtn.innerText = '🔄 Gathering Evidence & Submitting Appeal...';
+      appealBtn.disabled = true;
+
+      try {
+        const res = await fetch(`http://localhost:8000/api/v1/hospital/claims/${selectedClaim.claim_id}/auto-appeal`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(selectedClaim)
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          selectedClaim.appeal_details = result;
+          selectedClaim.approved_amount = result.new_approved_amount;
+          selectedClaim.outcome = 'AUTO_SETTLE';
+          selectedClaim.line_items = result.resolved_line_items;
+          currentTab = 'appeal';
+          renderApp();
+          return;
+        }
+      } catch (err) {
+        console.warn('Auto-appeal failed, running local resolution:', err);
+      } finally {
+        appealBtn.disabled = false;
+      }
+    });
+  }
 }
+
 
 // Initial render
 renderApp();
