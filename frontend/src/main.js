@@ -2,7 +2,10 @@ import './style.css';
 
 export const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
   ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')
-  : 'http://localhost:8000';
+  : (typeof window !== 'undefined' && window.location.port !== '5173' && window.location.origin.startsWith('http')
+      ? window.location.origin
+      : 'http://localhost:8000');
+
 
 
 // Reactive State

@@ -37,3 +37,20 @@ app.include_router(claims.router, prefix=settings.API_V1_PREFIX)
 app.include_router(gcp_fhir_ingest.router, prefix=settings.API_V1_PREFIX)
 app.include_router(hospital_appeal.router, prefix=settings.API_V1_PREFIX)
 
+# Mount built frontend static files if dist directory exists (Unified Docker Container)
+import os
+from fastapi.staticfiles import StaticFiles
+
+possible_dist_paths = [
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "frontend", "dist"),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist"),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist"),
+    "/app/frontend/dist"
+]
+
+frontend_dist = next((p for p in possible_dist_paths if os.path.isdir(p)), None)
+if frontend_dist:
+    logger.info(f"Serving built frontend static assets from: {frontend_dist}")
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+
+

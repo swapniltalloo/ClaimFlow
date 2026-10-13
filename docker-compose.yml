@@ -1,0 +1,47 @@
+services:
+  claimflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claimflow-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - USE_SQLITE_FALLBACK=true
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+
+  # Optional Postgres with pgvector for production database
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: claimflow-postgres
+    restart: unless-stopped
+    profiles: ["with-db"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-claimflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-claimflow_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-claimflow_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Optional Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: claimflow-redis
+    restart: unless-stopped
+    profiles: ["with-db"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
