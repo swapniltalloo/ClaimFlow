@@ -1,5 +1,10 @@
 import './style.css';
 
+export const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+  ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')
+  : 'http://localhost:8000';
+
+
 // Reactive State
 let currentPortal = 'hospital'; // 'hospital' | 'insurance'
 let currentInsurerFilter = 'ALL'; // 'ALL' | 'AUTO_SETTLE' | 'HUMAN_REVIEW' | 'PARTIAL_SETTLE'
@@ -1151,7 +1156,7 @@ function attachEventHandlers() {
   if (resetBtn) {
     resetBtn.addEventListener('click', async () => {
       try {
-        await fetch('http://localhost:8000/api/v1/claims/reset', { method: 'POST' });
+        await fetch(`${API_BASE}/api/v1/claims/reset`, { method: 'POST' });
         claims = [];
         selectedClaim = null;
         showToast('Queue Reset', 'Clearinghouse queue reset. You can now post fresh scenarios!');
@@ -1327,7 +1332,7 @@ function setupHospitalPdfIntake() {
     btnApollo.onclick = async () => {
       try {
         btnApollo.innerText = 'Loading...';
-        const res = await fetch('http://localhost:8000/api/v1/claims/sample-pdf/apollo');
+        const res = await fetch(`${API_BASE}/api/v1/claims/sample-pdf/apollo`);
         const blob = await res.blob();
         const sampleFile = new File([blob], 'apollo_clean_hospital_bill.pdf', { type: 'application/pdf' });
         handleFile(sampleFile);
@@ -1345,7 +1350,7 @@ function setupHospitalPdfIntake() {
     btnMax.onclick = async () => {
       try {
         btnMax.innerText = 'Loading...';
-        const res = await fetch('http://localhost:8000/api/v1/claims/sample-pdf/max');
+        const res = await fetch(`${API_BASE}/api/v1/claims/sample-pdf/max`);
         const blob = await res.blob();
         const sampleFile = new File([blob], 'max_unbundled_hospital_bill.pdf', { type: 'application/pdf' });
         handleFile(sampleFile);
@@ -1377,7 +1382,7 @@ function setupHospitalPdfIntake() {
       formData.append('policy_tenure_days', 180);
 
       try {
-        const response = await fetch('http://localhost:8000/api/v1/claims/upload-pdf', {
+        const response = await fetch(`${API_BASE}/api/v1/claims/upload-pdf`, {
           method: 'POST',
           body: formData
         });
@@ -1469,10 +1474,10 @@ async function runScenario(scenarioId) {
 
   try {
     if (scenarioId === 'abdm') {
-      const sampleRes = await fetch('http://localhost:8000/api/v1/gcp/fhir/sample-nhcx');
+      const sampleRes = await fetch(`${API_BASE}/api/v1/gcp/fhir/sample-nhcx`);
       const bundle = sampleRes.ok ? await sampleRes.json() : null;
       if (bundle) {
-        const ingestRes = await fetch('http://localhost:8000/api/v1/gcp/fhir/ingest-bundle', {
+        const ingestRes = await fetch(`${API_BASE}/api/v1/gcp/fhir/ingest-bundle`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(bundle)
@@ -1634,7 +1639,7 @@ async function runScenario(scenarioId) {
 
     if (!payload) return;
 
-    const res = await fetch('http://localhost:8000/api/v1/claims/discharge', {
+    const res = await fetch(`${API_BASE}/api/v1/claims/discharge`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -1727,7 +1732,7 @@ async function triggerAutoAppeal(claim) {
   showToast("Auto-Appeal Triggered", "Hospital HIS agent gathering clinical proof via NRCES codes...");
 
   try {
-    const res = await fetch(`http://localhost:8000/api/v1/hospital/claims/${claim.claim_id}/auto-appeal`, {
+    const res = await fetch(`${API_BASE}/api/v1/hospital/claims/${claim.claim_id}/auto-appeal`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(claim)
@@ -1896,7 +1901,7 @@ function openCustomClaimModal() {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/claims/discharge', {
+      const response = await fetch(`${API_BASE}/api/v1/claims/discharge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -2008,7 +2013,7 @@ function transformBackendClaim(apiResult) {
 
 async function fetchExistingClaims() {
   try {
-    const res = await fetch('http://localhost:8000/api/v1/claims');
+    const res = await fetch(`${API_BASE}/api/v1/claims`);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
