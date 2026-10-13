@@ -94,10 +94,25 @@ def test_hospital_appeal_agent_evidence_gathering_and_nhcx_bundle():
 
 
 def test_api_hospital_auto_appeal_endpoint():
-    """Tests the FastAPI /api/v1/hospital/claims/{claim_id}/auto-appeal endpoint."""
+    """Tests the FastAPI /api/v1/hospital/claims/{claim_id}/auto-appeal endpoint for Scenario 2."""
     response = client.post("/api/v1/hospital/claims/CLM-2026-00102/auto-appeal", json={})
     assert response.status_code == 200
     data = response.json()
     assert data["appeal_status"] == "SUBMITTED_AND_APPROVED"
+    assert data["outcome"] == "PARTIAL_SETTLE"
     assert data["new_approved_amount"] > 54000.0
     assert len(data["gathered_documents"]) >= 1
+
+
+def test_api_hospital_auto_appeal_scenario3_rejection():
+    """Verifies that attempting to appeal blatant fraud (Scenario 3 - Phantom ICU + knee surgery
+    for Dengue) is actively rejected, locked, and escalated to SIU.
+    """
+    response = client.post("/api/v1/hospital/claims/CLM-2026-00103/auto-appeal", json={})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["appeal_status"] == "REJECTED_SIU"
+    assert data["outcome"] == "SIU_ESCALATE"
+    assert data["transaction_id"] is None
+    assert data["new_approved_amount"] < 20000.0  # Only legitimate room days allowed
+

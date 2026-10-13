@@ -1210,11 +1210,27 @@ function attachEventHandlers() {
   if (approveBtn) {
     approveBtn.addEventListener('click', () => {
       if (selectedClaim) {
-        selectedClaim.outcome = "AUTO_SETTLE";
-        selectedClaim.approved_amount = selectedClaim.total_claimed_amount;
-        selectedClaim.risk_score = 25.0;
-        selectedClaim.transaction_id = `TXN-${Math.random().toString(16).substring(2, 10).toUpperCase()}`;
-        showToast("Claim Approved!", `Claim ${selectedClaim.claim_id} manually approved and released via UPI/NEFT.`);
+        const isHighFraud = (selectedClaim.risk_score >= 60) || (selectedClaim.risk_reasons && selectedClaim.risk_reasons.some(r => r.toLowerCase().includes('phantom') || r.toLowerCase().includes('mismatch')));
+        
+        if (isHighFraud) {
+          // Anti-Fraud Defense: Approve ONLY legitimate, medically corroborated line items (keeping phantom items at 0)
+          const cleanApproved = (selectedClaim.line_items || [])
+            .filter(it => !it.description.toLowerCase().includes('phantom') && !it.description.toLowerCase().includes('knee') && !it.code.includes('29888') && !it.code.includes('ICU'))
+            .reduce((acc, it) => acc + (it.approved_amount || it.total_amount || 0), 0) || 13500;
+
+          selectedClaim.outcome = "PARTIAL_SETTLE";
+          selectedClaim.approved_amount = cleanApproved;
+          selectedClaim.transaction_id = `TXN-REV-${Math.random().toString(16).substring(2, 10).toUpperCase()}`;
+          showToast(
+            "Adjudication Completed with Deductions",
+            `Adjudicator approved verified inpatient care (${formatCurrency(cleanApproved)}). Disputed Phantom ICU & Knee surgery denied!`
+          );
+        } else {
+          selectedClaim.outcome = "AUTO_SETTLE";
+          selectedClaim.approved_amount = selectedClaim.total_claimed_amount;
+          selectedClaim.transaction_id = `TXN-REV-${Math.random().toString(16).substring(2, 10).toUpperCase()}`;
+          showToast("Claim Approved!", `Claim ${selectedClaim.claim_id} approved and released via UPI/NEFT.`);
+        }
         renderApp();
       }
     });
@@ -1721,21 +1737,50 @@ async function triggerAutoAppeal(claim) {
       const result = await res.json();
       claim.appeal_details = result;
       claim.approved_amount = result.new_approved_amount;
-      claim.outcome = 'AUTO_SETTLE';
+      claim.outcome = result.outcome || (result.appeal_status === 'REJECTED_SIU' ? 'SIU_ESCALATE' : 'PARTIAL_SETTLE');
       claim.line_items = result.resolved_line_items;
-      claim.transaction_id = result.transaction_id || `TXN-APPL-${Math.random().toString(16).substring(2, 8).toUpperCase()}`;
+      claim.transaction_id = result.transaction_id || null;
+      if (result.appeal_adjudication_rationale) {
+        claim.ai_explanation = result.appeal_adjudication_rationale;
+      }
 
-      showToast(
-        "Appeal Accepted & Settled!",
-        `Adverse deductions reversed! New payout: ${formatCurrency(result.new_approved_amount)}.`,
-        "Inspect Settlement 🛡️",
-        () => {
-          currentPortal = 'insurance';
-          selectedClaim = claim;
-          currentTab = 'appeal';
-          renderApp();
-        }
-      );
+      if (claim.outcome === 'SIU_ESCALATE' || result.appeal_status === 'REJECTED_SIU') {
+        showToast(
+          "❌ Appeal REJECTED by Clearinghouse",
+          `Fraud check failed: Disputed Phantom ICU / knee surgery contradict clinical EHR. Locked & escalated to SIU!`,
+          "Inspect SIU Dossier 🛡️",
+          () => {
+            currentPortal = 'insurance';
+            selectedClaim = claim;
+            currentTab = 'appeal';
+            renderApp();
+          }
+        );
+      } else if (claim.outcome === 'PARTIAL_SETTLE') {
+        showToast(
+          "✂️ Appeal Partially Approved",
+          `Surgical unbundling accepted with operative notes; GIPSA Room Rent Cap maintained per policy contract. Approved: ${formatCurrency(result.new_approved_amount)}.`,
+          "Inspect Settlement 🛡️",
+          () => {
+            currentPortal = 'insurance';
+            selectedClaim = claim;
+            currentTab = 'appeal';
+            renderApp();
+          }
+        );
+      } else {
+        showToast(
+          "✓ Appeal Accepted & Settled!",
+          `All clinical proofs authenticated under GIPSA guidelines. New payout: ${formatCurrency(result.new_approved_amount)}.`,
+          "Inspect Settlement 🛡️",
+          () => {
+            currentPortal = 'insurance';
+            selectedClaim = claim;
+            currentTab = 'appeal';
+            renderApp();
+          }
+        );
+      }
 
       renderApp();
     }
