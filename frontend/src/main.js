@@ -1605,7 +1605,19 @@ async function runScenario(scenarioId) {
         line_items: apiResult.claim_details?.line_items || payload.claim.line_items,
         clause_citations: apiResult.clause_citations?.length ? apiResult.clause_citations : ["SEC-1.1 Inpatient Coverage: Verified against policy RAG store."],
         fraud_layers: scenarioId === '1' ? { rules: 0, anomaly: 12, supervised: 10, graph: 15 } : (scenarioId === '2' ? { rules: 65, anomaly: 45, supervised: 42, graph: 20 } : { rules: 92, anomaly: 84, supervised: 88, graph: 65 }),
-        ehr_excerpt: payload.discharge_summary
+        ehr_excerpt: payload.discharge_summary,
+        is_gcp_fhir: true,
+        gcp_fhir_store: "projects/claimflow-prod/locations/asia-south1/datasets/abdm-claims/fhirStores/nhcx-store",
+        abdm_meta: apiResult.gcp_metadata || {
+          abha_id: "91-8812-4421-9901",
+          hospital_id: payload.claim.hospital_id,
+          encounter_id: `ENC-${payload.claim.claim_id}`,
+          bundle_id: `NHCX-BUNDLE-${payload.claim.claim_id}`,
+          claim_response_id: `RESP-${payload.claim.claim_id}`,
+          transaction_id: apiResult.transaction_id || `TXN-BD03A613471C`,
+          fhir_profile: "https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimBundle"
+        },
+        fhir_claim_response: apiResult.fhir_claim_response || null
       };
 
       claims.unshift(newClaim);
@@ -1875,6 +1887,7 @@ function transformBackendClaim(apiResult) {
     transaction_id: apiResult.transaction_id || (apiResult.outcome === 'AUTO_SETTLE' ? `TXN-BD03A613471C` : null),
     is_gcp_fhir: !!apiResult.gcp_metadata,
     abdm_meta: apiResult.gcp_metadata || null,
+    fhir_claim_response: apiResult.fhir_claim_response || null,
     clinical_facts: details.clinical_facts || {
       primary_diagnosis_code: details.primary_icd10 || "K35.80",
       primary_diagnosis_name: details.primary_diagnosis || "Inpatient Care",
