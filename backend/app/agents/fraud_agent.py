@@ -115,6 +115,13 @@ class FraudAgent:
             (graph_score * 0.10)
         )
 
+        self.last_layers = {
+            "rules": int(min(100.0, max(0.0, rule_score))),
+            "anomaly": int(min(100.0, max(0.0, anomaly_score))),
+            "supervised": int(min(100.0, max(0.0, supervised_score))),
+            "graph": int(min(100.0, max(0.0, graph_score)))
+        }
+
         composite_risk = round(min(100.0, max(0.0, composite)), 2)
         return composite_risk, top_reasons[:5]
 

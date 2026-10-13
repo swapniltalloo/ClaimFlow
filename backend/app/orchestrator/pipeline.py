@@ -25,7 +25,8 @@ class PipelineExecutionResult:
         total_latency_ms: float,
         transaction: Optional[PaymentTransaction] = None,
         notifications: Optional[Dict[str, Any]] = None,
-        sla_breached: bool = False
+        sla_breached: bool = False,
+        fraud_layers: Optional[Dict[str, Any]] = None
     ):
         self.claim_id = claim_id
         self.decision = decision
@@ -34,6 +35,7 @@ class PipelineExecutionResult:
         self.transaction = transaction
         self.notifications = notifications or {}
         self.sla_breached = sla_breached
+        self.fraud_layers = fraud_layers or {"rules": 0, "anomaly": 10, "supervised": 10, "graph": 10}
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -47,7 +49,8 @@ class PipelineExecutionResult:
             "clause_citations": self.decision.clause_citations,
             "fired_rule_ids": self.decision.fired_rule_ids,
             "audit_hash": self.decision.audit_hash,
-            "transaction_id": self.transaction.transaction_id if self.transaction else None
+            "transaction_id": self.transaction.transaction_id if self.transaction else None,
+            "fraud_layers": self.fraud_layers
         }
 
 
@@ -154,6 +157,8 @@ class ClaimFlowOrchestrator:
             total_elapsed_ms = (time.perf_counter() - pipeline_start) * 1000
             sla_breached = total_elapsed_ms > (settings.SLA_MAX_SECONDS * 1000)
 
+            fraud_layers = getattr(self.fraud, "last_layers", {"rules": 0, "anomaly": 10, "supervised": 10, "graph": 10})
+
             return PipelineExecutionResult(
                 claim_id=claim.claim_id,
                 decision=decision,
@@ -161,7 +166,8 @@ class ClaimFlowOrchestrator:
                 total_latency_ms=total_elapsed_ms,
                 transaction=txn,
                 notifications=notifs,
-                sla_breached=sla_breached
+                sla_breached=sla_breached,
+                fraud_layers=fraud_layers
             )
 
         except Exception as e:

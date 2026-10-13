@@ -1592,7 +1592,7 @@ async function runScenario(scenarioId) {
         latency_sec: (apiResult.total_latency_ms / 1000).toFixed(2),
         audit_hash: apiResult.audit_hash,
         transaction_id: apiResult.transaction_id || (apiResult.outcome === 'AUTO_SETTLE' ? `TXN-UPI-${Math.random().toString(16).substring(2, 8).toUpperCase()}` : null),
-        clinical_facts: {
+        clinical_facts: apiResult.claim_details?.clinical_facts || {
           primary_diagnosis_code: primaryIcd10,
           primary_diagnosis_name: primaryDiag,
           admit_time: payload.claim.admission_time.replace('T', ' ').slice(0, 16),
@@ -1604,7 +1604,7 @@ async function runScenario(scenarioId) {
         },
         line_items: apiResult.claim_details?.line_items || payload.claim.line_items,
         clause_citations: apiResult.clause_citations?.length ? apiResult.clause_citations : ["SEC-1.1 Inpatient Coverage: Verified against policy RAG store."],
-        fraud_layers: scenarioId === '1' ? { rules: 0, anomaly: 12, supervised: 10, graph: 15 } : (scenarioId === '2' ? { rules: 65, anomaly: 45, supervised: 42, graph: 20 } : { rules: 92, anomaly: 84, supervised: 88, graph: 65 }),
+        fraud_layers: apiResult.fraud_layers || (scenarioId === '1' ? { rules: 0, anomaly: 12, supervised: 10, graph: 15 } : (scenarioId === '2' ? { rules: 65, anomaly: 45, supervised: 42, graph: 20 } : { rules: 92, anomaly: 84, supervised: 88, graph: 65 })),
         ehr_excerpt: payload.discharge_summary,
         is_gcp_fhir: true,
         gcp_fhir_store: "projects/claimflow-prod/locations/asia-south1/datasets/abdm-claims/fhirStores/nhcx-store",
