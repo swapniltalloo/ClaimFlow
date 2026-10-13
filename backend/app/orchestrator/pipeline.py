@@ -12,6 +12,7 @@ from app.agents.policy_agent import PolicyAgent
 from app.agents.fraud_agent import FraudAgent
 from app.agents.settlement_agent import SettlementAgent
 from app.services.payment import PaymentTransaction
+from app.services.gemini_service import GeminiService
 from app.core.config import settings
 from app.core.logging import logger
 
@@ -26,7 +27,9 @@ class PipelineExecutionResult:
         transaction: Optional[PaymentTransaction] = None,
         notifications: Optional[Dict[str, Any]] = None,
         sla_breached: bool = False,
-        fraud_layers: Optional[Dict[str, Any]] = None
+        fraud_layers: Optional[Dict[str, Any]] = None,
+        ai_explanation: Optional[str] = None,
+        patient_explanation: Optional[str] = None
     ):
         self.claim_id = claim_id
         self.decision = decision
@@ -36,6 +39,8 @@ class PipelineExecutionResult:
         self.notifications = notifications or {}
         self.sla_breached = sla_breached
         self.fraud_layers = fraud_layers or {"rules": 0, "anomaly": 10, "supervised": 10, "graph": 10}
+        self.ai_explanation = ai_explanation or getattr(decision, "ai_explanation", None)
+        self.patient_explanation = patient_explanation or getattr(decision, "patient_explanation", None)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -50,7 +55,10 @@ class PipelineExecutionResult:
             "fired_rule_ids": self.decision.fired_rule_ids,
             "audit_hash": self.decision.audit_hash,
             "transaction_id": self.transaction.transaction_id if self.transaction else None,
-            "fraud_layers": self.fraud_layers
+            "fraud_layers": self.fraud_layers,
+            "ai_explanation": self.ai_explanation or self.decision.ai_explanation,
+            "patient_explanation": self.patient_explanation or self.decision.patient_explanation,
+            "reviewer_notes": self.decision.reviewer_notes
         }
 
 
@@ -58,11 +66,12 @@ class ClaimFlowOrchestrator:
     """Phase 3 Orchestrator & SLA Engine.
     
     Coordinates the real-time pipeline:
-    ingest -> parse -> [coding ‖ policy] -> fraud -> decide -> settle
+    ingest -> parse -> [coding ‖ policy] -> fraud -> decide -> settle -> explain (Gemini)
     
     Features:
     - Parallel execution of Coding Validator and Policy Agent
     - Per-stage latency monitoring against 15-minute SLA budget
+    - Google Gemini Live Clinical & Adjudication Rationale generation
     - Automatic fallback to HUMAN_REVIEW on any exception or timeout (Never silent approval!)
     """
 
@@ -72,13 +81,15 @@ class ClaimFlowOrchestrator:
         validator_agent: Optional[CodingValidatorAgent] = None,
         policy_agent: Optional[PolicyAgent] = None,
         fraud_agent: Optional[FraudAgent] = None,
-        settlement_agent: Optional[SettlementAgent] = None
+        settlement_agent: Optional[SettlementAgent] = None,
+        gemini_service: Optional[GeminiService] = None
     ):
         self.parser = parser_agent or EHRParserAgent()
         self.validator = validator_agent or CodingValidatorAgent()
         self.policy = policy_agent or PolicyAgent()
         self.fraud = fraud_agent or FraudAgent(auto_train=False)
         self.settlement = settlement_agent or SettlementAgent()
+        self.gemini = gemini_service or GeminiService()
 
     async def process_claim(
         self,
@@ -154,6 +165,20 @@ class ClaimFlowOrchestrator:
             )
             stage_latencies["settlement"] = (time.perf_counter() - t0) * 1000
 
+            # Stage 6: Explainable AI Adjudication Rationale & Patient Explanation (Google Gemini)
+            t0 = time.perf_counter()
+            ai_exp_dict = self.gemini.generate_adjudication_explanation(
+                claim=claim,
+                clinical_facts=clinical_facts,
+                decision=decision,
+                risk_reasons=top_reasons
+            )
+            decision.ai_explanation = ai_exp_dict.get("ai_rationale")
+            decision.patient_explanation = ai_exp_dict.get("patient_explanation")
+            claim.ai_explanation = ai_exp_dict.get("ai_rationale")
+            claim.patient_explanation = ai_exp_dict.get("patient_explanation")
+            stage_latencies["ai_explanation"] = (time.perf_counter() - t0) * 1000
+
             total_elapsed_ms = (time.perf_counter() - pipeline_start) * 1000
             sla_breached = total_elapsed_ms > (settings.SLA_MAX_SECONDS * 1000)
 
@@ -167,7 +192,9 @@ class ClaimFlowOrchestrator:
                 transaction=txn,
                 notifications=notifs,
                 sla_breached=sla_breached,
-                fraud_layers=fraud_layers
+                fraud_layers=fraud_layers,
+                ai_explanation=decision.ai_explanation,
+                patient_explanation=decision.patient_explanation
             )
 
         except Exception as e:

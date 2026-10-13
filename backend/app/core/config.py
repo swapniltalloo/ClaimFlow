@@ -44,7 +44,12 @@ class Settings(BaseSettings):
     GOOGLE_APPLICATION_CREDENTIALS: str | None = None
 
     model_config = SettingsConfigDict(
-        env_file=(".env", "backend/.env"),
+        env_file=(
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), ".env"),
+            "../.env",
+            ".env",
+            "backend/.env",
+        ),
         env_file_encoding="utf-8",
         extra="ignore"
     )

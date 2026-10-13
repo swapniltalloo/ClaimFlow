@@ -48,6 +48,29 @@ class EHRParserAgent:
         if self.gemini.is_available():
             gemini_facts = self.gemini.parse_clinical_summary(discharge_text, patient_id or "PAT-UNKNOWN")
             if gemini_facts:
+                # Enrich with clinical evidence snippets & medications
+                meds, med_snippet = self._extract_medications(discharge_text)
+                if meds and not gemini_facts.prescribed_medications:
+                    gemini_facts.prescribed_medications = meds
+                if med_snippet:
+                    gemini_facts.evidence_snippets.setdefault("medications", med_snippet)
+
+                admit_dt, disch_dt, d_snippets, _ = self._extract_dates(discharge_text)
+                _, _, stay_snippets, _ = self._extract_stay_duration(discharge_text, admit_dt, disch_dt)
+                d_snippets.update(stay_snippets)
+                for k, v in d_snippets.items():
+                    gemini_facts.evidence_snippets.setdefault(k, v)
+
+                # Validate uncertainties on vague narratives
+                has_explicit_dates = "admit_time" in d_snippets or "admission date" in discharge_text.lower()
+                has_explicit_icd = any(re.search(r'\b' + re.escape(d["code"]) + r'\b', discharge_text) for d in self.icd10_catalog)
+                if not has_explicit_dates:
+                    gemini_facts.flagged_uncertainties.append("Missing explicit admission or discharge dates.")
+                if not has_explicit_icd:
+                    gemini_facts.flagged_uncertainties.append("Diagnosis inferred without explicit ICD-10 notation.")
+                if gemini_facts.flagged_uncertainties:
+                    gemini_facts.confidence_score = min(gemini_facts.confidence_score, 0.75)
+
                 return gemini_facts
 
         evidence_snippets: Dict[str, str] = {}

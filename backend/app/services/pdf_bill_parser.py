@@ -201,20 +201,20 @@ BILL TEXT FROM PDF:
 {text}
 \"\"\"
 """
-        from google.genai import types
-        # Try primary model, then fallback model
-        for model_name in ["gemini-flash-latest", "gemini-3.5-flash-lite"]:
+        # Try primary verified model, then fallback
+        for model_name in ["gemini-flash-lite-latest", "gemini-flash-latest"]:
             try:
                 response = self.gemini.client.models.generate_content(
                     model=model_name,
                     contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        response_schema=ExtractedBillSchema,
-                        temperature=0.0
-                    )
+                    config={
+                        "response_mime_type": "application/json",
+                        "temperature": 0.0
+                    }
                 )
                 parsed_dict = json.loads(response.text)
+                if isinstance(parsed_dict, list):
+                    parsed_dict = parsed_dict[0] if parsed_dict else {}
                 return ExtractedBillSchema(**parsed_dict)
             except Exception as e:
                 logger.warning(f"Gemini model {model_name} extraction failed ({e}), trying next or fallback.")

@@ -107,6 +107,8 @@ class Claim(BaseModel):
     settled_at: Optional[datetime] = None
     is_fraud: bool = False
     fraud_pattern: Optional[str] = None
+    ai_explanation: Optional[str] = None
+    patient_explanation: Optional[str] = None
 
 
 class Decision(BaseModel):
@@ -120,6 +122,8 @@ class Decision(BaseModel):
     audit_hash: str
     decided_at: datetime = Field(default_factory=utc_now)
     reviewer_notes: Optional[str] = None
+    ai_explanation: Optional[str] = None
+    patient_explanation: Optional[str] = None
 
 
 class AuditEvent(BaseModel):

@@ -72,6 +72,14 @@ async def list_claims():
     return list(PROCESSED_CLAIMS.values())
 
 
+@router.post("/reset", response_model=Dict[str, Any])
+@router.delete("/reset", response_model=Dict[str, Any])
+async def reset_claims_stream():
+    """Resets the in-memory claims repository so users can test fresh scenarios."""
+    PROCESSED_CLAIMS.clear()
+    return {"status": "success", "message": "Claims stream reset successfully", "count": 0}
+
+
 @router.get("/{claim_id}", response_model=Dict[str, Any])
 async def get_claim(claim_id: str):
     """Retrieves full details, stage latencies, and verdicts for a claim."""
